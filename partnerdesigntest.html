@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defigo - Partner Design Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        sans: ['Poppins', 'sans-serif'], 
+                        outfit: ['Poppins', 'sans-serif'],
+                        inter: ['Poppins', 'sans-serif']
+                    },
+                    colors: {
+                        emerald: {
+                            50: '#effbf3',
+                            100: '#d7f6e1',
+                            200: '#b2edc7',
+                            300: '#80dea1',
+                            400: '#5CD67A', // Defigo Green
+                            500: '#5CD67A', // Defigo Green
+                            600: '#3eb85d',
+                            700: '#32924b',
+                            800: '#2c743e',
+                            900: '#255f34',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { background-color: #EDF0FC; color: #00134D; }
+        
+        /* Canvas & Topology Styles */
+        .canvas-bg {
+            background-color: #030617; /* Defigo Dark Mode */
+            background-image: radial-gradient(rgba(168, 192, 240, 0.15) 1px, transparent 1px); /* A8C0F0 */
+            background-size: 20px 20px;
+        }
+        
+        .node-enter { animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.9) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+        
+        .wireless-line { stroke-dasharray: 4 6; animation: dashWireless 1s linear infinite; }
+        @keyframes dashWireless { to { stroke-dashoffset: -10; } }
+
+        /* Funnel Visibility */
+        .funnel-step { display: none !important; opacity: 0; }
+        .funnel-step.active.step-block { display: block !important; opacity: 1; animation: fadeIn 0.4s ease forwards; }
+        .funnel-step.active.step-flex { display: flex !important; opacity: 1; animation: fadeIn 0.4s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Custom Scrollbar for sidebar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #A8C0F0; border-radius: 4px; }
+
+        /* Hide scrollbar for category selector */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        select option { background-color: #00134D; color: #fff; }
+
+        /* Hide arrows for number inputs */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased h-screen flex flex-col overflow-hidden bg-[#EDF0FC]">
+
+    <div id="hardware-modal" class="hidden fixed inset-0 z-[100] bg-[#00134D]/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-[3rem] max-w-2xl w-full p-8 md:p-12 relative shadow-2xl animate-in zoom-in-95 border border-[#A8C0F0]/50 max-h-[90vh] overflow-y-auto">
+            <button onclick="toggleHardwareInfo()" class="absolute top-6 right-6 text-gray-400 hover:text-[#00134D] bg-[#EDF0FC] p-2 rounded-full transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="font-outfit text-3xl font-black mb-8 text-[#00134D]">Technical Reference</h3>
+            <div class="space-y-8">
+                <div class="flex gap-5 pb-6 border-b border-gray-100">
+                    <div class="w-14 h-14 bg-[#00134D] rounded-2xl flex items-center justify-center shrink-0 shadow-lg"><i data-lucide="smartphone" class="text-white w-6 h-6"></i></div>
+                    <div>
+                        <h4 class="font-bold text-lg font-outfit text-[#00134D]">Display Unit (Defigo)</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed mt-1">10.1" touchscreen (500 nits) made from UV-protected Makrolon plastic. Built-in 1080p wide-angle camera (130°), IP44 rating, and integrated RFID reader. Powered and connected via PoE+ directly from the Relay Hub. Operating temperature -20 °C to +50 °C.</p>
+                    </div>
+                </div>
+                <div class="flex gap-5 pb-6 border-b border-gray-100">
+                    <div class="w-14 h-14 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-center shrink-0"><i data-lucide="cpu" class="text-[#5CD67A] w-6 h-6"></i></div>
+                    <div>
+                        <h4 class="font-bold text-lg font-outfit text-[#00134D]">Relay Hub (Control Unit)</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed mt-1">The brain of the native system. Placed in a secure zone. Connects via 4G/LTE or wired LAN (CAT6). Powered by 110-230V. Equipped with 3 relay outputs (12V/24V/Potential-free) for up to 3 door environments, plus 1 input.</p>
+                    </div>
+                </div>
+                <div class="flex gap-5 pb-6 border-b border-gray-100">
+                    <div class="w-14 h-14 bg-[#EDF0FC] border border-[#A8C0F0]/50 rounded-2xl flex items-center justify-center shrink-0"><i data-lucide="credit-card" class="text-[#00134D] w-6 h-6"></i></div>
+                    <div>
+                        <h4 class="font-bold text-lg font-outfit text-[#00134D]">Smart Reader (Suprema Xpass2)</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed mt-1">IP65/IP67 and IK08 rated. Powered via PoE or 12V/24V DC. Features offline support and built-in door relay. Available in Slim (Mullion), Standard (Gangbox), and PIN versions. Communicates directly with the cloud via standard Ethernet switches.</p>
+                    </div>
+                </div>
+                <div class="flex gap-5">
+                    <div class="w-14 h-14 bg-red-50 border border-red-100 rounded-2xl flex items-center justify-center shrink-0"><i data-lucide="lock" class="text-red-500 w-6 h-6"></i></div>
+                    <div>
+                        <h4 class="font-bold text-lg font-outfit text-[#00134D]">Secure I/O Module</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed mt-1">Used for high-security perimeter doors with Smart Readers (Suprema). Connects to the reader's RS-485 input and is placed in a secure zone to prevent tampering with the door strike from the outside. Requires a separate power supply.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <header class="bg-white border-b border-[#A8C0F0]/50 h-20 flex-shrink-0 flex items-center justify-between px-6 z-50 relative">
+        <div class="flex items-center gap-6">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-[#00134D] rounded-xl flex items-center justify-center shadow-lg"><i data-lucide="shield" class="text-white w-5 h-5"></i></div>
+                <span class="font-outfit font-bold text-xl tracking-widest uppercase text-[#00134D] hidden sm:block">Defigo</span>
+            </div>
+            <div class="h-8 w-px bg-[#EDF0FC] hidden sm:block"></div>
+            <span class="font-outfit font-semibold text-gray-500 tracking-wider text-sm uppercase">Partner Design Center</span>
+        </div>
+        
+        <div class="hidden md:flex items-center gap-3 xl:gap-4">
+            <div class="flex items-center gap-2" id="nav-step-0"><div class="w-6 h-6 rounded-full border-2 border-gray-300 text-gray-400 flex items-center justify-center text-xs font-bold">1</div><span class="text-xs font-bold uppercase tracking-wide text-gray-400">Project</span></div>
+            <div class="w-6 h-px bg-gray-300"></div>
+            <div class="flex items-center gap-2" id="nav-step-1"><div class="w-6 h-6 rounded-full border-2 border-gray-300 text-gray-400 flex items-center justify-center text-xs font-bold">2</div><span class="text-xs font-bold uppercase tracking-wide text-gray-400">Design</span></div>
+            <div class="w-6 h-px bg-gray-300"></div>
+            <div class="flex items-center gap-2" id="nav-step-2"><div class="w-6 h-6 rounded-full border-2 border-gray-300 text-gray-400 flex items-center justify-center text-xs font-bold">3</div><span class="text-xs font-bold uppercase tracking-wide text-gray-400">Add-ons</span></div>
+            <div class="w-6 h-px bg-gray-300"></div>
+            <div class="flex items-center gap-2" id="nav-step-3"><div class="w-6 h-6 rounded-full border-2 border-gray-300 text-gray-400 flex items-center justify-center text-xs font-bold">4</div><span class="text-xs font-bold uppercase tracking-wide text-gray-400">Summary</span></div>
+        </div>
+
+        <button onclick="location.reload()" class="text-xs font-outfit font-bold text-gray-500 hover:text-[#FF7366] transition uppercase tracking-widest flex items-center gap-2">
+            Cancel <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+    </header>
+
+    <div class="flex-1 flex overflow-hidden relative">
+        
+        <main id="main-scroll-area" class="flex-1 flex flex-col relative bg-[#EDF0FC] h-full overflow-y-auto z-0">
+            
+            <!-- Step 0: Project Information -->
+            <div id="step-0" class="funnel-step step-block active w-full max-w-5xl m-auto py-12 px-6">
+                <div class="text-center space-y-4 mb-16">
+                    <h2 class="font-outfit text-4xl md:text-5xl font-extrabold tracking-tight text-[#00134D]">Project Information</h2>
+                    <p class="text-[#00134D]/70 text-lg">Describe the property to optimize the system design.</p>
+                </div>
+                
+                <div class="bg-white p-8 md:p-10 rounded-[3rem] shadow-xl border border-transparent">
+                    
+                    <h3 class="font-outfit text-lg font-bold text-[#00134D] mb-6">1. Property Type <span class="text-[#FF7366]">*</span></h3>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-10">
+                        <button onclick="setBuildingType('Residential')" class="btype-btn p-4 rounded-2xl border-2 border-transparent bg-[#EDF0FC] hover:bg-[#A8C0F0]/30 transition text-center flex flex-col items-center gap-2" data-type="Residential"><i data-lucide="home" class="w-6 h-6 text-[#00134D]"></i><span class="text-[11px] font-bold uppercase text-[#00134D]">Residential</span></button>
+                        <button onclick="setBuildingType('Office')" class="btype-btn p-4 rounded-2xl border-2 border-transparent bg-[#EDF0FC] hover:bg-[#A8C0F0]/30 transition text-center flex flex-col items-center gap-2" data-type="Office"><i data-lucide="briefcase" class="w-6 h-6 text-[#00134D]"></i><span class="text-[11px] font-bold uppercase text-[#00134D]">Office</span></button>
+                        <button onclick="setBuildingType('Co-working')" class="btype-btn p-4 rounded-2xl border-2 border-transparent bg-[#EDF0FC] hover:bg-[#A8C0F0]/30 transition text-center flex flex-col items-center gap-2" data-type="Co-working"><i data-lucide="users" class="w-6 h-6 text-[#00134D]"></i><span class="text-[11px] font-bold uppercase text-[#00134D]">Co-working</span></button>
+                        <button onclick="setBuildingType('Student Housing')" class="btype-btn p-4 rounded-2xl border-2 border-transparent bg-[#EDF0FC] hover:bg-[#A8C0F0]/30 transition text-center flex flex-col items-center gap-2" data-type="Student Housing"><i data-lucide="graduation-cap" class="w-6 h-6 text-[#00134D]"></i><span class="text-[11px] font-bold uppercase text-[#00134D]">Student Housing</span></button>
+                        <button onclick="setBuildingType('Mixed-use')" class="btype-btn p-4 rounded-2xl border-2 border-transparent bg-[#EDF0FC] hover:bg-[#A8C0F0]/30 transition text-center flex flex-col items-center gap-2" data-type="Mixed-use"><i data-lucide="building-2" class="w-6 h-6 text-[#00134D]"></i><span class="text-[11px] font-bold uppercase text-[#00134D]">Mixed-use</span></button>
+                        <button onclick="setBuildingType('Logistics')" class="btype-btn p-4 rounded-2xl border-2 border-transparent bg-[#EDF0FC] hover:bg-[#A8C0F0]/30 transition text-center flex flex-col items-center gap-2" data-type="Logistics"><i data-lucide="truck" class="w-6 h-6 text-[#00134D]"></i><span class="text-[11px] font-bold uppercase text-[#00134D]">Logistics</span></button>
+                        <button onclick="setBuildingType('Industrial')" class="btype-btn p-4 rounded-2xl border-2 border-transparent bg-[#EDF0FC] hover:bg-[#A8C0F0]/30 transition text-center flex flex-col items-center gap-2" data-type="Industrial"><i data-lucide="factory" class="w-6 h-6 text-[#00134D]"></i><span class="text-[11px] font-bold uppercase text-[#00134D]">Industrial</span></button>
+                        <button onclick="setBuildingType('Hotel')" class="btype-btn p-4 rounded-2xl border-2 border-transparent bg-[#EDF0FC] hover:bg-[#A8C0F0]/30 transition text-center flex flex-col items-center gap-2" data-type="Hotel"><i data-lucide="hotel" class="w-6 h-6 text-[#00134D]"></i><span class="text-[11px] font-bold uppercase text-[#00134D]">Hotel</span></button>
+                        <button onclick="setBuildingType('Retail')" class="btype-btn p-4 rounded-2xl border-2 border-transparent bg-[#EDF0FC] hover:bg-[#A8C0F0]/30 transition text-center flex flex-col items-center gap-2" data-type="Retail"><i data-lucide="shopping-bag" class="w-6 h-6 text-[#00134D]"></i><span class="text-[11px] font-bold uppercase text-[#00134D]">Retail</span></button>
+                        <button onclick="setBuildingType('Other')" class="btype-btn p-4 rounded-2xl border-2 border-transparent bg-[#EDF0FC] hover:bg-[#A8C0F0]/30 transition text-center flex flex-col items-center gap-2" data-type="Other"><i data-lucide="layout-grid" class="w-6 h-6 text-[#00134D]"></i><span class="text-[11px] font-bold uppercase text-[#00134D]">Other</span></button>
+                    </div>
+
+                    <div id="tenant-container" class="hidden mt-8 pt-8 border-t border-gray-100 animate-in fade-in slide-in-from-top-4">
+                        <h3 class="font-outfit text-lg font-bold text-[#00134D] mb-4">2. <span id="tenant-title">Number of units</span> <span class="text-[#FF7366]">*</span></h3>
+                        <div class="relative w-full md:w-1/2">
+                            <input type="number" id="tenant-input" min="1" oninput="state.tenantCount = parseInt(this.value) || 0; renderBOM();" placeholder="0" class="w-full px-6 py-5 rounded-[2rem] bg-[#EDF0FC] border-2 border-transparent focus:bg-white focus:border-[#00134D] outline-none text-2xl font-bold transition-colors text-[#00134D]">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Required to generate accurate SaaS estimates and per-device cost analysis.</p>
+                    </div>
+
+                    <h3 class="font-outfit text-lg font-bold text-[#00134D] mb-6 border-t border-gray-100 pt-8 mt-8">3. Project Type <span class="text-[#FF7366]">*</span></h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <label class="flex items-center gap-4 p-5 border-2 border-[#EDF0FC] rounded-2xl cursor-pointer hover:border-[#A8C0F0] transition-colors has-[:checked]:border-[#5CD67A] has-[:checked]:bg-emerald-50 relative group">
+                            <input type="radio" name="project_status" value="New Construction" class="w-5 h-5 text-[#5CD67A]" onchange="setProjectStatus('New Construction')">
+                            <div class="flex-1"><p class="font-bold font-outfit text-[#00134D]">New Construction</p><p class="text-xs text-gray-500 mt-1">Full infrastructure planned from scratch.</p></div>
+                        </label>
+                        <label class="flex items-center gap-4 p-5 border-2 border-[#EDF0FC] rounded-2xl cursor-pointer hover:border-[#A8C0F0] transition-colors has-[:checked]:border-[#5CD67A] has-[:checked]:bg-emerald-50 relative group">
+                            <input type="radio" name="project_status" value="Retrofit/Renovation" class="w-5 h-5 text-[#5CD67A]" onchange="setProjectStatus('Retrofit/Renovation')">
+                            <div class="flex-1"><p class="font-bold font-outfit text-[#00134D]">Retrofit / Renovation</p><p class="text-xs text-gray-500 mt-1">Replacement of an existing access system.</p></div>
+                        </label>
+                    </div>
+
+                    <div id="step0-error-box" class="hidden bg-[#FF7366]/10 border border-[#FF7366]/30 text-[#FF7366] px-6 py-4 rounded-2xl items-center gap-3 mt-8">
+                        <i data-lucide="shield-alert" class="w-5 h-5 shrink-0"></i>
+                        <p class="text-sm font-bold" id="step0-error-text"></p>
+                    </div>
+
+                    <div class="mt-12 flex justify-end">
+                        <button onclick="checkStep0AndProceed()" class="bg-[#FF8E3D] text-[#00134D] px-10 py-4 rounded-full font-outfit font-bold text-lg hover:opacity-90 transition shadow-[0_10px_30px_rgba(255,142,61,0.3)] flex items-center gap-2">Go to Design <i data-lucide="arrow-right" class="w-5 h-5"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 1: Design / Topology Canvas -->
+            <div id="step-1" class="funnel-step step-flex flex-col flex-1 w-full canvas-bg relative">
+                
+                <div class="absolute top-0 bottom-0 left-[45%] right-0 bg-[#5CD67A]/5 border-l-2 border-[#5CD67A]/30 border-dashed z-0">
+                    <div class="absolute top-4 left-4 flex items-center gap-2 group cursor-help z-20">
+                        <div class="text-[#5CD67A] font-outfit font-bold tracking-widest uppercase text-sm flex items-center gap-2 bg-[#00134D] px-3 py-1.5 rounded-full border border-[#A8C0F0]/50 shadow-lg">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i> Secure Zone (Indoor)
+                            <i data-lucide="info" class="w-4 h-4 text-[#5CD67A]"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="absolute top-4 left-4 z-30 hidden sm:block">
+                    <button onclick="toggleHardwareInfo()" class="bg-[#00134D]/80 hover:bg-[#00134D] text-white border border-[#A8C0F0]/50 backdrop-blur-md px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors shadow-lg">
+                        <i data-lucide="book-open" class="w-4 h-4"></i> Technical Reference
+                    </button>
+                </div>
+
+                <div class="relative z-10 w-full max-w-6xl mx-auto flex-1 flex flex-col gap-8 p-8 pb-32" id="container-ref">
+                    <div id="empty-state" class="m-auto text-center pt-20">
+                        <div class="w-24 h-24 bg-[#00134D]/50 rounded-full flex items-center justify-center mx-auto mb-6"><i data-lucide="mouse-pointer-click" class="w-10 h-10 text-[#5CD67A]"></i></div>
+                        <h3 class="font-outfit text-2xl font-bold text-white mb-2">Configure Topology</h3>
+                        <p class="text-[#A8C0F0]">Add Defigo devices and readers below.</p>
+                    </div>
+                    <div id="topology-container" class="w-full flex flex-col gap-12 mt-10 relative"></div>
+                </div>
+
+                <div class="sticky bottom-32 md:bottom-10 z-40 flex flex-col items-center w-full pointer-events-none pb-6">
+                    <div class="pointer-events-auto flex flex-col items-center relative">
+                        <div id="fab-menu" class="hidden mb-4 bg-white/95 backdrop-blur-xl border border-[#A8C0F0]/50 shadow-2xl rounded-[2rem] p-4 transition-all duration-300 origin-bottom transform scale-95 opacity-0 w-[95vw] md:w-auto overflow-x-auto no-scrollbar">
+                            
+                            <div class="flex gap-2 sm:gap-4 text-[#00134D] min-w-max">
+                                <div class="pr-4 border-r border-[#A8C0F0]/30 flex gap-2 sm:gap-4">
+                                    <button onclick="addNode('main', 'Display + Hub')" class="flex flex-col items-center gap-2 p-2 rounded-2xl hover:bg-[#EDF0FC] transition group w-[75px] sm:w-[85px]">
+                                        <div class="w-14 h-14 bg-[#00134D] text-white rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-md"><i data-lucide="smartphone" class="w-6 h-6"></i></div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wide text-center leading-tight">Display<br/>+ Hub</span>
+                                    </button>
+                                    <button onclick="addNode('main_standalone', 'Display (Standalone)')" class="flex flex-col items-center gap-2 p-2 rounded-2xl hover:bg-[#EDF0FC] transition group w-[75px] sm:w-[85px]">
+                                        <div class="w-14 h-14 bg-[#00134D] text-white rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-md"><i data-lucide="smartphone" class="w-6 h-6"></i></div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wide text-center leading-tight">Display<br/>(Standalone)</span>
+                                    </button>
+                                    <button onclick="addNode('side', 'Mobile access (Only)')" class="flex flex-col items-center gap-2 p-2 rounded-2xl hover:bg-[#EDF0FC] transition group w-[75px] sm:w-[85px]">
+                                        <div class="w-14 h-14 bg-[#EDF0FC] text-[#00134D] border border-[#A8C0F0]/50 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform"><i data-lucide="smartphone-nfc" class="w-6 h-6"></i></div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wide text-center leading-tight">Mobile<br/>Access</span>
+                                    </button>
+                                </div>
+                                
+                                <div class="flex gap-2 sm:gap-4 pl-2">
+                                    <button onclick="addNode('sr_slim', 'Slim Reader')" class="flex flex-col items-center gap-2 p-2 rounded-2xl hover:bg-[#EDF0FC] transition group w-[75px] sm:w-[85px]">
+                                        <div class="w-14 h-14 bg-white text-[#00134D] border-2 border-[#5CD67A] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm"><i data-lucide="rectangle-vertical" class="w-5 h-5"></i></div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wide text-center leading-tight">Slim<br/>Reader</span>
+                                    </button>
+                                    <button onclick="addNode('sr_std', 'Standard Reader')" class="flex flex-col items-center gap-2 p-2 rounded-2xl hover:bg-[#EDF0FC] transition group w-[75px] sm:w-[85px]">
+                                        <div class="w-14 h-14 bg-white text-[#00134D] border-2 border-[#5CD67A] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm"><i data-lucide="credit-card" class="w-6 h-6"></i></div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wide text-center leading-tight">Standard<br/>Reader</span>
+                                    </button>
+                                    <button onclick="addNode('sr_pin', 'PIN Reader')" class="flex flex-col items-center gap-2 p-2 rounded-2xl hover:bg-[#EDF0FC] transition group w-[75px] sm:w-[85px]">
+                                        <div class="w-14 h-14 bg-white text-[#00134D] border-2 border-[#5CD67A] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm"><i data-lucide="layout-grid" class="w-6 h-6"></i></div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wide text-center leading-tight">Reader<br/>w/ PIN</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="toggleFab()" id="fab-btn" class="bg-[#FF8E3D] text-[#00134D] px-8 py-4 rounded-full font-outfit font-bold text-lg shadow-[0_15px_40px_rgba(255,142,61,0.4)] hover:bg-[#e67d32] transition-all duration-300 flex items-center gap-3">
+                            <i data-lucide="plus" id="fab-icon" class="w-6 h-6 transition-transform duration-300"></i> Add Products
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Addons & Licensing -->
+            <div id="step-2" class="funnel-step step-block w-full max-w-5xl m-auto py-12 px-6">
+                <div class="text-center space-y-4 mb-12">
+                    <h2 class="font-outfit text-4xl md:text-5xl font-extrabold tracking-tight text-[#00134D]">Add-ons & Connectivity</h2>
+                </div>
+                
+                <div class="mb-12">
+                    <h3 class="font-outfit text-2xl font-extrabold mb-6 text-[#00134D]">1. Internet Connection (Defigo Hub)</h3>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <button onclick="setNetwork('wired')" id="btn-net-wired" class="p-8 rounded-[2.5rem] border-4 border-[#00134D] shadow-xl text-left transition-all bg-white relative">
+                            <div class="mb-4 text-[#00134D]"><i data-lucide="cable" class="w-8 h-8"></i></div>
+                            <h4 class="font-outfit font-extrabold text-xl mb-2 text-[#00134D]">Client's Building Network</h4>
+                            <p class="text-gray-500 font-light mb-4 text-sm">System connects via local firewall. Requires network configuration from IT.</p>
+                            <span class="bg-[#EDF0FC] text-[#00134D] px-3 py-1.5 rounded-full font-bold text-sm border border-[#A8C0F0]">No additional recurring fee</span>
+                        </button>
+                        
+                        <button onclick="setNetwork('4g')" id="btn-net-4g" class="p-8 rounded-[2.5rem] border-4 border-transparent hover:bg-white bg-white/60 text-left transition-all relative">
+                            <div class="absolute top-4 right-4 bg-emerald-100 text-[#5CD67A] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">Easiest Install</div>
+                            <div class="mb-4 text-gray-400" id="icon-net-4g"><i data-lucide="radio-tower" class="w-8 h-8"></i></div>
+                            <h4 class="font-outfit font-extrabold text-xl mb-2 text-[#00134D]">Defigo 4G / LTE</h4>
+                            <p class="text-gray-500 font-light mb-4 text-sm">Isolated from client's IT environment. Pre-installed eSIM, works out-of-the-box.</p>
+                            <span class="bg-emerald-50 text-[#5CD67A] px-3 py-1.5 rounded-full font-bold text-sm" id="price-label-4g">+$29.99/mo per Hub/Modem</span>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-4 px-2 italic">* For standalone Suprema readers, network topology is automatically generated with modems/switches.</p>
+                </div>
+
+                <div class="mb-12">
+                    <h3 class="font-outfit text-2xl font-extrabold mb-6 text-[#00134D]">2. Accessories & Mounting</h3>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-white p-8 rounded-[2.5rem] border border-transparent shadow-sm flex justify-between items-center hover:border-[#A8C0F0] transition-colors">
+                            <div class="flex gap-4 items-center">
+                                <div class="w-12 h-12 bg-[#EDF0FC] rounded-2xl flex items-center justify-center text-[#00134D]"><i data-lucide="scan" class="w-6 h-6"></i></div>
+                                <div>
+                                    <h4 class="font-outfit text-lg font-bold text-[#00134D]">In-Wall Mount Kit</h4>
+                                    <p class="text-xs font-bold text-[#5CD67A] uppercase tracking-wider">For Defigo Display</p>
+                                    <p class="text-sm text-gray-500 mt-1" id="price-label-inWall">$416.00/device</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between w-28 shrink-0 bg-[#EDF0FC] p-1.5 rounded-full border border-[#A8C0F0]/50">
+                                <button onclick="updateAddon('inWall', -1)" class="w-8 h-8 shrink-0 rounded-full bg-white shadow flex items-center justify-center hover:bg-gray-100 font-bold text-[#00134D]">-</button>
+                                <input type="number" id="val-addon-inWall" value="0" min="0" onchange="setAddon('inWall', this.value)" class="font-outfit font-bold flex-1 w-full text-center text-[#00134D] bg-transparent outline-none">
+                                <button onclick="updateAddon('inWall', 1)" class="w-8 h-8 shrink-0 rounded-full bg-white shadow flex items-center justify-center hover:bg-gray-100 font-bold text-[#00134D]">+</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-8 rounded-[2.5rem] border border-transparent shadow-sm flex justify-between items-center hover:border-[#A8C0F0] transition-colors">
+                            <div class="flex gap-4 items-center">
+                                <div class="w-12 h-12 bg-[#EDF0FC] rounded-2xl flex items-center justify-center text-[#00134D]"><i data-lucide="shield-alert" class="w-6 h-6"></i></div>
+                                <div>
+                                    <h4 class="font-outfit text-lg font-bold text-[#00134D]">SecuFrame</h4>
+                                    <p class="text-xs font-bold text-[#5CD67A] uppercase tracking-wider">Security Frame</p>
+                                    <p class="text-sm text-gray-500 mt-1" id="price-label-secuFrame">$416.00/device</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between w-28 shrink-0 bg-[#EDF0FC] p-1.5 rounded-full border border-[#A8C0F0]/50">
+                                <button onclick="updateAddon('secuFrame', -1)" class="w-8 h-8 shrink-0 rounded-full bg-white shadow flex items-center justify-center hover:bg-gray-100 font-bold text-[#00134D]">-</button>
+                                <input type="number" id="val-addon-secuFrame" value="0" min="0" onchange="setAddon('secuFrame', this.value)" class="font-outfit font-bold flex-1 w-full text-center text-[#00134D] bg-transparent outline-none">
+                                <button onclick="updateAddon('secuFrame', 1)" class="w-8 h-8 shrink-0 rounded-full bg-white shadow flex items-center justify-center hover:bg-gray-100 font-bold text-[#00134D]">+</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-8 rounded-[2.5rem] border border-transparent shadow-sm flex justify-between items-center hover:border-[#A8C0F0] transition-colors">
+                            <div class="flex gap-4 items-center">
+                                <div class="w-12 h-12 bg-[#EDF0FC] rounded-2xl flex items-center justify-center text-[#00134D]"><i data-lucide="monitor" class="w-6 h-6"></i></div>
+                                <div>
+                                    <h4 class="font-outfit text-lg font-bold text-[#00134D]">Home Station</h4>
+                                    <p class="text-xs font-bold text-[#5CD67A] uppercase tracking-wider">Indoor Monitor</p>
+                                    <p class="text-sm text-gray-500 mt-1" id="price-label-intercom">$332.00/device</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between w-28 shrink-0 bg-[#EDF0FC] p-1.5 rounded-full border border-[#A8C0F0]/50">
+                                <button onclick="updateAddon('intercom', -1)" class="w-8 h-8 shrink-0 rounded-full bg-white shadow flex items-center justify-center hover:bg-gray-100 font-bold text-[#00134D]">-</button>
+                                <input type="number" id="val-addon-intercom" value="0" min="0" onchange="setAddon('intercom', this.value)" class="font-outfit font-bold flex-1 w-full text-center text-[#00134D] bg-transparent outline-none">
+                                <button onclick="updateAddon('intercom', 1)" class="w-8 h-8 shrink-0 rounded-full bg-white shadow flex items-center justify-center hover:bg-gray-100 font-bold text-[#00134D]">+</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-8 rounded-[2.5rem] border border-transparent shadow-sm flex justify-between items-center hover:border-[#A8C0F0] transition-colors">
+                            <div class="flex gap-4 items-center">
+                                <div class="w-12 h-12 bg-[#EDF0FC] rounded-2xl flex items-center justify-center text-[#00134D]"><i data-lucide="baseline" class="w-6 h-6"></i></div>
+                                <div>
+                                    <h4 class="font-outfit text-lg font-bold text-[#00134D]">Home Station Stand</h4>
+                                    <p class="text-xs font-bold text-[#5CD67A] uppercase tracking-wider">Tabletop Mount</p>
+                                    <p class="text-sm text-gray-500 mt-1" id="price-label-homeStationStand">$47.00/device</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between w-28 shrink-0 bg-[#EDF0FC] p-1.5 rounded-full border border-[#A8C0F0]/50">
+                                <button onclick="updateAddon('homeStationStand', -1)" class="w-8 h-8 shrink-0 rounded-full bg-white shadow flex items-center justify-center hover:bg-gray-100 font-bold text-[#00134D]">-</button>
+                                <input type="number" id="val-addon-homeStationStand" value="0" min="0" onchange="setAddon('homeStationStand', this.value)" class="font-outfit font-bold flex-1 w-full text-center text-[#00134D] bg-transparent outline-none">
+                                <button onclick="updateAddon('homeStationStand', 1)" class="w-8 h-8 shrink-0 rounded-full bg-white shadow flex items-center justify-center hover:bg-gray-100 font-bold text-[#00134D]">+</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-8 rounded-[2.5rem] border border-transparent shadow-sm flex justify-between items-center hover:border-[#A8C0F0] transition-colors">
+                            <div class="flex gap-4 items-center">
+                                <div class="w-12 h-12 bg-[#EDF0FC] rounded-2xl flex items-center justify-center text-[#00134D]"><i data-lucide="nfc" class="w-6 h-6"></i></div>
+                                <div>
+                                    <h4 class="font-outfit text-lg font-bold text-[#00134D]">Access Keys</h4>
+                                    <p class="text-xs font-bold text-[#5CD67A] uppercase tracking-wider">Key Fobs (50-pack)</p>
+                                    <p class="text-sm text-gray-500 mt-1" id="price-label-keyfobs">$138.00/pack</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between w-28 shrink-0 bg-[#EDF0FC] p-1.5 rounded-full border border-[#A8C0F0]/50">
+                                <button onclick="updateAddon('keyfobs', -1)" class="w-8 h-8 shrink-0 rounded-full bg-white shadow flex items-center justify-center hover:bg-gray-100 font-bold text-[#00134D]">-</button>
+                                <input type="number" id="val-addon-keyfobs" value="0" min="0" onchange="setAddon('keyfobs', this.value)" class="font-outfit font-bold flex-1 w-full text-center text-[#00134D] bg-transparent outline-none">
+                                <button onclick="updateAddon('keyfobs', 1)" class="w-8 h-8 shrink-0 rounded-full bg-white shadow flex items-center justify-center hover:bg-gray-100 font-bold text-[#00134D]">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-end mb-6">
+                        <h3 class="font-outfit text-2xl font-extrabold text-[#00134D]">3. Service Packages (SaaS)</h3>
+                        <span id="flex-badge-core" class="bg-[#5CD67A]/20 text-[#255f34] text-[10px] sm:text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full border border-[#5CD67A]/30">All-inclusive in Core</span>
+                        <span id="flex-badge-flex" class="bg-[#FF8E3D]/20 text-[#e67d32] text-[10px] sm:text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full border border-[#FF8E3D]/30 hidden">Modular in Flex</span>
+                    </div>
+                    <div class="grid md:grid-cols-3 gap-4 md:gap-6">
+                        <button onclick="toggleFlexAddon('access')" id="btn-flex-access" class="p-6 rounded-[2rem] border-2 text-left transition-all relative flex flex-col h-full bg-white border-[#A8C0F0]/50 hover:border-[#00134D] group">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="w-12 h-12 bg-[#EDF0FC] text-[#00134D] rounded-xl flex items-center justify-center"><i data-lucide="smartphone" class="w-6 h-6"></i></div>
+                                <div id="icon-check-access" class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center text-transparent"><i data-lucide="check" class="w-3.5 h-3.5"></i></div>
+                            </div>
+                            <h4 class="font-outfit font-bold text-lg mb-1 text-[#00134D]">Access & Intercom</h4>
+                            <p class="text-xs text-gray-500 mb-4 flex-1">Video calls to app and mobile access via the Defigo app.</p>
+                            <div class="bg-[#EDF0FC] text-[#00134D] px-3 py-2 rounded-xl text-center">
+                                <span class="font-bold text-sm block" id="lbl-flex-access-price">-</span>
+                            </div>
+                        </button>
+
+                        <button onclick="toggleFlexAddon('security')" id="btn-flex-security" class="p-6 rounded-[2rem] border-2 text-left transition-all relative flex flex-col h-full bg-white border-[#A8C0F0]/50 hover:border-[#00134D] group">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="w-12 h-12 bg-[#EDF0FC] text-[#00134D] rounded-xl flex items-center justify-center"><i data-lucide="shield" class="w-6 h-6"></i></div>
+                                <div id="icon-check-security" class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center text-transparent"><i data-lucide="check" class="w-3.5 h-3.5"></i></div>
+                            </div>
+                            <h4 class="font-outfit font-bold text-lg mb-1 text-[#00134D]">Security Services</h4>
+                            <p class="text-xs text-gray-500 mb-4 flex-1">Real-time access logs and scheduled door opening times.</p>
+                            <div class="bg-[#EDF0FC] text-[#00134D] px-3 py-2 rounded-xl text-center">
+                                <span class="font-bold text-sm block" id="lbl-flex-security-price">-</span>
+                            </div>
+                        </button>
+
+                        <button onclick="toggleFlexAddon('admin')" id="btn-flex-admin" class="p-6 rounded-[2rem] border-2 text-left transition-all relative flex flex-col h-full bg-white border-[#A8C0F0]/50 hover:border-[#00134D] group">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="w-12 h-12 bg-[#EDF0FC] text-[#00134D] rounded-xl flex items-center justify-center"><i data-lucide="settings" class="w-6 h-6"></i></div>
+                                <div id="icon-check-admin" class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center text-transparent"><i data-lucide="check" class="w-3.5 h-3.5"></i></div>
+                            </div>
+                            <h4 class="font-outfit font-bold text-lg mb-1 text-[#00134D]">Admin & Control</h4>
+                            <p class="text-xs text-gray-500 mb-4 flex-1">Local administrator access and automated door management.</p>
+                            <div class="bg-[#EDF0FC] text-[#00134D] px-3 py-2 rounded-xl text-center">
+                                <span class="font-bold text-sm block" id="lbl-flex-admin-price">-</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mt-12 flex justify-between items-center max-w-lg mx-auto">
+                    <button onclick="prevStep()" class="text-gray-500 font-bold hover:text-[#FF7366] uppercase text-sm tracking-widest flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4"></i> Back</button>
+                    <button onclick="nextStep()" class="bg-[#FF8E3D] text-[#00134D] px-10 py-4 rounded-full font-outfit font-bold text-lg hover:opacity-90 transition shadow-lg flex items-center gap-2">Go to Summary <i data-lucide="arrow-right" class="w-5 h-5"></i></button>
+                </div>
+            </div>
+
+            <!-- Step 3: Request Quote Form -->
+            <div id="step-3" class="funnel-step step-block w-full max-w-3xl m-auto py-12 px-6">
+                <div class="text-center space-y-4 mb-12">
+                    <h2 class="font-outfit text-4xl md:text-5xl font-extrabold tracking-tight text-[#00134D]">Request a Quote</h2>
+                    <p class="text-gray-500 text-lg">Submit your preliminary design to us to confirm topology and apply your partner discounts.</p>
+                </div>
+                
+                <div class="bg-white p-8 md:p-14 rounded-[3rem] shadow-2xl border border-transparent relative">
+                    <div class="space-y-6">
+                        <div>
+                            <label class="font-outfit text-xs font-bold text-[#00134D]/60 uppercase pl-2 tracking-widest">Installer / Partner Name <span class="text-[#FF7366]">*</span></label>
+                            <input type="text" id="contact-company" placeholder="Company Name" class="mt-2 w-full px-6 py-5 rounded-[2rem] bg-[#EDF0FC] border-2 border-transparent focus:bg-white focus:border-[#00134D] outline-none text-lg transition-colors text-[#00134D]">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="w-full">
+                                <label class="font-outfit text-xs font-bold text-[#00134D]/60 uppercase pl-2 tracking-widest">First Name <span class="text-[#FF7366]">*</span></label>
+                                <input type="text" id="contact-firstname" placeholder="First Name" class="mt-2 w-full px-6 py-5 rounded-[2rem] bg-[#EDF0FC] border-2 border-transparent focus:bg-white focus:border-[#00134D] outline-none text-lg transition-colors text-[#00134D]">
+                            </div>
+                            <div class="w-full">
+                                <label class="font-outfit text-xs font-bold text-[#00134D]/60 uppercase pl-2 tracking-widest">Last Name <span class="text-[#FF7366]">*</span></label>
+                                <input type="text" id="contact-lastname" placeholder="Last Name" class="mt-2 w-full px-6 py-5 rounded-[2rem] bg-[#EDF0FC] border-2 border-transparent focus:bg-white focus:border-[#00134D] outline-none text-lg transition-colors text-[#00134D]">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="w-full">
+                                <label class="font-outfit text-xs font-bold text-[#00134D]/60 uppercase pl-2 tracking-widest">Email <span class="text-[#FF7366]">*</span></label>
+                                <input type="email" id="contact-email" placeholder="Email address" class="mt-2 w-full px-6 py-5 rounded-[2rem] bg-[#EDF0FC] border-2 border-transparent focus:bg-white focus:border-[#00134D] outline-none text-lg transition-colors text-[#00134D]">
+                            </div>
+                            <div class="w-full">
+                                <label class="font-outfit text-xs font-bold text-[#00134D]/60 uppercase pl-2 tracking-widest">Phone <span class="text-[#FF7366]">*</span></label>
+                                <input type="tel" id="contact-phone" placeholder="Phone number" class="mt-2 w-full px-6 py-5 rounded-[2rem] bg-[#EDF0FC] border-2 border-transparent focus:bg-white focus:border-[#00134D] outline-none text-lg transition-colors text-[#00134D]">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="font-outfit text-xs font-bold text-[#00134D]/60 uppercase pl-2 tracking-widest">End Customer / Project Name <span class="text-[#FF7366]">*</span></label>
+                            <input type="text" id="contact-project" placeholder="e.g. Linden Apartments, project number" class="mt-2 w-full px-6 py-5 rounded-[2rem] bg-[#EDF0FC] border-2 border-transparent focus:bg-white focus:border-[#00134D] outline-none text-lg transition-colors text-[#00134D]">
+                        </div>
+                        
+                        <div id="form-error-box" class="hidden bg-[#FF7366]/10 border border-[#FF7366]/30 text-[#FF7366] px-6 py-4 rounded-2xl items-center gap-3 mt-4">
+                            <i data-lucide="shield-alert" class="w-5 h-5 shrink-0"></i>
+                            <p class="text-sm font-bold" id="form-error-text"></p>
+                        </div>
+
+                        <button onclick="handleCheckout()" class="w-full mt-8 bg-[#FF8E3D] text-[#00134D] py-6 rounded-[2rem] font-outfit font-bold text-xl hover:opacity-90 transition shadow-[0_10px_30px_rgba(255,142,61,0.3)] flex items-center justify-center gap-2">
+                            Submit Design
+                        </button>
+                    </div>
+                </div>
+                <div class="mt-12 flex justify-center"><button onclick="prevStep()" class="text-gray-500 font-bold hover:text-[#FF7366] uppercase text-sm tracking-widest transition-colors"><i data-lucide="arrow-left" class="inline w-4 h-4 mr-2"></i> Edit Add-ons</button></div>
+            </div>
+
+            <!-- Step 4: Success Receipt -->
+            <div id="step-4" class="funnel-step step-block w-full max-w-4xl m-auto py-12 px-6">
+                <div class="bg-white p-12 rounded-[3rem] shadow-2xl text-center border border-transparent">
+                    <div class="w-20 h-20 bg-emerald-50 text-[#5CD67A] rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner border border-emerald-100">
+                        <i data-lucide="check-circle-2" class="w-10 h-10"></i>
+                    </div>
+                    <h2 class="font-outfit text-5xl font-black mb-4 text-[#00134D]">Design Submitted!</h2>
+                    <p class="text-xl text-gray-500 mb-12 max-w-xl mx-auto">Our sales team has received your specifications and will follow up with a confirmed partner quote to your email.</p>
+                    
+                    <div id="receipt-capture-area" class="bg-[#EDF0FC] rounded-[2rem] border border-[#A8C0F0]/50 p-8 mb-10 text-left">
+                        <h3 class="font-outfit text-lg font-bold text-[#00134D]/60 uppercase tracking-widest mb-6 border-b border-[#A8C0F0]/30 pb-4 flex justify-between items-center">
+                            <span>Partner Summary</span>
+                            <span class="text-xs bg-white px-2 py-1 rounded border border-[#A8C0F0]/50 text-[#00134D]">Excl. VAT</span>
+                        </h3>
+                        <div class="grid md:grid-cols-2 gap-8 font-inter text-sm">
+                            <div class="space-y-4">
+                                <div>
+                                    <span class="block text-gray-500 font-bold mb-1">Partner & Project</span>
+                                    <p class="text-[#00134D] font-medium" id="receipt-company">-</p>
+                                    <p class="text-[#00134D] font-medium text-xs mt-1">Ref: <span id="receipt-project">-</span></p>
+                                </div>
+                                <div class="pt-2">
+                                    <span class="block text-gray-500 font-bold mb-1">Category & Type</span>
+                                    <p class="text-[#00134D] font-medium" id="receipt-btype">-</p>
+                                    <p class="text-[#00134D] font-medium text-xs mt-1" id="receipt-pstatus">-</p>
+                                </div>
+                                <div class="pt-2">
+                                    <span class="block text-gray-500 font-bold mb-1">Pricing Model</span>
+                                    <p class="text-[#00134D] font-medium" id="receipt-model">-</p>
+                                    <p class="text-[#00134D] font-medium text-xs mt-1">Devices: <span id="receipt-tenants">0</span></p>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="pt-4 border-t border-[#A8C0F0]/30 md:pt-0 md:border-t-0">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <span class="text-gray-500 font-bold">Hardware (MSRP)</span>
+                                        <span class="font-outfit font-black text-lg text-[#00134D]" id="receipt-capex">-</span>
+                                    </div>
+                                    
+                                    <ul id="receipt-bom-list" class="space-y-2 mb-6 font-inter text-xs font-medium text-[#00134D] border-b border-[#A8C0F0]/30 pb-4">
+                                        </ul>
+
+                                    <div class="bg-emerald-50 rounded-2xl p-5 border border-emerald-100">
+                                        <div class="flex justify-between items-start mb-3">
+                                            <span class="text-emerald-900 font-bold flex items-center gap-2 mt-1"><i data-lucide="cloud" class="w-4 h-4 text-[#5CD67A]"></i> License Value (End Customer)</span>
+                                            <div class="text-right">
+                                                <span class="font-outfit font-bold text-[#5CD67A] text-lg block leading-none" id="receipt-license">-</span>
+                                                <span id="receipt-per-unit-cost" class="text-[10px] text-emerald-700/80 font-medium hidden mt-1"></span>
+                                            </div>
+                                        </div>
+                                        <div id="receipt-license-breakdown" class="mt-3 pt-3 border-t border-emerald-200/60 space-y-1.5 hidden">
+                                            </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-6 italic" id="receipt-flex-disclaimer" style="display:none;">
+                            * Note: Estimated with Flex Start ($0.00). Additional service layers like Video Access and Security are purchased separately by the customer.
+                        </p>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mx-auto mt-8">
+                        <button id="btn-download" onclick="downloadSummary()" class="bg-white border-2 border-[#A8C0F0] text-[#00134D] px-8 py-4 rounded-full font-bold font-outfit shadow-sm hover:bg-[#EDF0FC] transition flex items-center justify-center gap-2">
+                            Download as Image <i data-lucide="download" class="w-5 h-5"></i>
+                        </button>
+                        <button onclick="location.reload()" class="bg-[#FF8E3D] text-[#00134D] px-10 py-4 rounded-full font-bold font-outfit shadow-lg flex items-center justify-center gap-2 hover:opacity-90 transition">
+                            Start New Design <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+        </main>
+
+        <!-- BOM Sidebar -->
+        <aside id="bom-sidebar" class="w-96 bg-white border-l border-[#A8C0F0]/30 flex flex-col transform transition-transform duration-500 z-40 translate-x-full lg:translate-x-0 absolute lg:relative right-0 h-full shadow-2xl lg:shadow-none shrink-0">
+            <div class="p-8 border-b border-[#A8C0F0]/30 bg-[#EDF0FC] flex justify-between items-center">
+                <h3 class="font-outfit font-extrabold text-2xl text-[#00134D]">Your Design</h3>
+                <button onclick="toggleMobileBOM()" class="lg:hidden text-gray-400 hover:text-[#00134D] absolute top-8 right-6"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-8 space-y-6">
+                <div class="bg-[#0A1226] p-1.5 rounded-full flex relative shadow-inner">
+                    <div id="toggle-bg" class="absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-[#FF8E3D] rounded-full transition-all duration-300 left-1.5 shadow-md"></div>
+                    <button onclick="setPricingModel('core')" id="btn-model-core" class="flex-1 relative z-10 py-2.5 text-xs uppercase tracking-widest font-bold text-[#00134D] transition-colors">Defigo Core</button>
+                    <button onclick="setPricingModel('flex')" id="btn-model-flex" class="flex-1 relative z-10 py-2.5 text-xs uppercase tracking-widest font-bold text-white transition-colors">Defigo Flex</button>
+                </div>
+
+                <div>
+                    <h4 class="font-outfit text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4">Hardware & Licensing</h4>
+                    <ul id="bom-list" class="space-y-3 font-inter text-sm font-medium text-[#00134D]">
+                        </ul>
+                </div>
+
+                <div class="bg-[#00134D] rounded-2xl p-5 text-white shadow-xl">
+                    <div class="flex items-center gap-2 mb-2 text-[#A8C0F0]">
+                        <div class="w-2 h-2 bg-[#5CD67A] rounded-full animate-pulse"></div>
+                        <span class="font-outfit text-sm font-bold uppercase tracking-wide">System Capacity</span>
+                    </div>
+                    <p class="text-xs text-white/80 leading-relaxed mb-2"><span id="bom-free-relays" class="text-[#5CD67A] font-bold">0</span> available relay ports (Defigo Hub). Network switches and I/O modules are added automatically.</p>
+                </div>
+            </div>
+
+            <div class="p-8 border-t border-[#A8C0F0]/30 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.05)] relative z-50">
+                <div class="flex justify-between items-end mb-6">
+                    <div>
+                        <span class="font-outfit text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] block mb-1">Hardware (Est.)</span>
+                        <div class="flex items-end gap-2">
+                            <span class="text-3xl font-outfit font-black text-[#00134D]" id="bom-total-capex">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl relative group cursor-help transition-colors hover:bg-emerald-100/50 mb-4">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-2 text-emerald-900 font-bold text-sm mt-0.5">
+                            <i data-lucide="cloud" class="w-4 h-4 text-[#5CD67A]"></i>
+                            <span class="border-b border-dashed border-[#5CD67A]/50 flex items-center gap-1">License Value <i data-lucide="info" class="w-3 h-3 text-[#5CD67A]"></i></span>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-outfit font-bold text-[#5CD67A] text-lg block leading-none" id="bom-total-license">$0.00/mo</span>
+                            <span id="bom-per-unit-cost" class="text-[10px] text-emerald-700/80 font-medium hidden mt-1"></span>
+                        </div>
+                    </div>
+                    
+                    <div id="bom-license-breakdown" class="mt-3 pt-3 border-t border-emerald-200/60 space-y-1.5 hidden">
+                        </div>
+                    
+                    <div class="absolute bottom-full left-0 mb-3 w-[calc(100%+2rem)] -ml-4 bg-[#0A1226] text-white p-5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-[#1A243D] z-[100] transition-all duration-300 pointer-events-none opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0">
+                        <div id="tooltip-core-content" class="hidden">
+                            <p class="text-sm font-bold text-[#5CD67A] mb-2 font-outfit flex items-center gap-2"><i data-lucide="shield-check" class="w-4 h-4"></i> Core License includes:</p>
+                            <ul class="text-xs space-y-2.5 text-gray-200 font-light">
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-3 h-3 text-[#5CD67A] mt-0.5 shrink-0"></i> Unlimited app users</li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-3 h-3 text-[#5CD67A] mt-0.5 shrink-0"></i> Free video calls to mobile</li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-3 h-3 text-[#5CD67A] mt-0.5 shrink-0"></i> Cloud management & support</li>
+                            </ul>
+                            <p class="text-[10px] text-[#A8C0F0] mt-3 pt-2 border-t border-[#1A243D] italic">*Minimum Order: 45 licenses</p>
+                        </div>
+                        <div id="tooltip-flex-content" class="hidden">
+                            <p class="text-sm font-bold text-[#5CD67A] mb-3 font-outfit flex items-center gap-2"><i data-lucide="shield-check" class="w-4 h-4"></i> Flex Start ($0.00) includes:</p>
+                            <ul class="text-xs space-y-2.5 text-gray-200 font-light">
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-3 h-3 text-[#5CD67A] mt-0.5 shrink-0"></i> Audio Intercom (Ready to use)</li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-3 h-3 text-[#5CD67A] mt-0.5 shrink-0"></i> Defigo WebAdmin for board members</li>
+                                <li class="flex items-start gap-2"><i data-lucide="check" class="w-3 h-3 text-[#5CD67A] mt-0.5 shrink-0"></i> Over-the-air updates & support</li>
+                            </ul>
+                            <p class="text-[10px] text-[#A8C0F0] mt-3 pt-3 border-t border-[#1A243D]">* Service modules (Video, Security, etc.) are billed separately.</p>
+                        </div>
+                        <div class="absolute -bottom-2 left-12 w-4 h-4 bg-[#0A1226] border-b border-r border-[#1A243D] transform rotate-45"></div>
+                    </div>
+                </div>
+
+                <p class="text-[10px] text-gray-400 mb-6 leading-relaxed font-inter">
+                    * Note: Prices shown reflect <strong class="text-[#00134D]">Authorized Installer</strong> tier. Installation costs are set by you as the partner.
+                </p>
+                
+                <button id="btn-next-from-bom" onclick="handleBomNext()" class="w-full bg-[#FF8E3D] text-[#00134D] py-4 rounded-xl font-outfit font-bold text-lg hover:opacity-90 transition hidden shadow-lg flex items-center justify-center gap-2">
+                    Continue <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Mobile Bottom Bar -->
+        <div id="mobile-bottom-bar" class="lg:hidden absolute bottom-0 left-0 right-0 bg-white border-t border-[#A8C0F0]/50 flex flex-col z-[45] transition-transform duration-300 translate-y-full shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
+            <div class="bg-[#EDF0FC] border-b border-[#A8C0F0]/50 px-6 py-2.5 flex justify-between items-center">
+                <span class="text-[10px] font-bold text-[#00134D]/60 uppercase tracking-widest">Pricing View</span>
+                <span class="text-[10px] font-bold text-[#00134D] uppercase tracking-widest">Excl. VAT</span>
+            </div>
+            <div class="p-4 px-6 flex justify-between items-center">
+                <div onclick="toggleMobileBOM()" class="flex flex-col cursor-pointer hover:opacity-80">
+                    <span class="text-[10px] text-gray-500 font-bold uppercase tracking-widest flex items-center gap-1">Hardware <i data-lucide="chevron-up" class="w-3 h-3"></i></span>
+                    <span id="mobile-bar-price" class="font-outfit font-black text-2xl text-[#00134D]">$0.00</span>
+                </div>
+                <button id="mob-btn-next" onclick="handleBomNext()" class="bg-[#FF8E3D] text-[#00134D] px-8 py-3.5 rounded-xl font-outfit font-bold text-sm hover:opacity-90 shadow-md">
+                    Continue
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // ==========================================
+        // STATE & CONSTANTS (USD PARTNER PRICES)
+        // ==========================================
+        const PRICES = { 
+            core: { bundle: 2388.00, standalone: 1672.00, extraHub: 716.00, saasBase: 35.00, saasExtraDoor: 6.90 }, // saasBase is annual per unit
+            flex: { bundle: 3688.00, standalone: 2613.00, extraHub: 1075.00, saasBase: 0 },
+            shared: {
+                inWall: 416.00, secuFrame: 416.00, intercom: 332.00, homeStationStand: 47.00, keyfobs: 138.00,
+                srStandard: 426.00, srPin: 582.00, srSlim: 426.00,
+                switch8: 256.00, switch24: 623.00, switch48: 1202.00,
+                ioModule: 171.00, poeInjector: 61.00, modem: 171.00,
+                saas4G: 29.99
+            }
+        };
+
+        let state = {
+            step: 0,
+            btype: null,
+            pstatus: null,
+            tenantCount: 0,
+            pricingModel: 'core',
+            nodes: [], 
+            network: 'wired',
+            addons: { inWall: 0, secuFrame: 0, intercom: 0, homeStationStand: 0, keyfobs: 0 },
+            flexAddons: { access: false, security: false, admin: false },
+            contact: { company: '', name: '', email: '', phone: '', project: '' }
+        };
+
+        // Format Helper (USD en-US)
+        function formatPrice(price) {
+            return new Intl.NumberFormat('en-US', { 
+                style: 'currency', 
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(price);
+        }
+
+        // Cookie helper to fetch HubSpot original UTM / lead session tracker
+        function getCookie(name) {
+            let value = "; " + document.cookie;
+            let parts = value.split("; " + name + "=");
+            if (parts.length === 2) return parts.pop().split(";").shift();
+            return null;
+        }
+
+        function toggleHardwareInfo() {
+            const modal = document.getElementById('hardware-modal');
+            if(modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function updateStaticPrices() {
+            if(document.getElementById('price-label-inWall')) document.getElementById('price-label-inWall').innerText = formatPrice(PRICES.shared.inWall) + '/device';
+            if(document.getElementById('price-label-secuFrame')) document.getElementById('price-label-secuFrame').innerText = formatPrice(PRICES.shared.secuFrame) + '/device';
+            if(document.getElementById('price-label-intercom')) document.getElementById('price-label-intercom').innerText = formatPrice(PRICES.shared.intercom) + '/device';
+            if(document.getElementById('price-label-homeStationStand')) document.getElementById('price-label-homeStationStand').innerText = formatPrice(PRICES.shared.homeStationStand) + '/device';
+            if(document.getElementById('price-label-keyfobs')) document.getElementById('price-label-keyfobs').innerText = formatPrice(PRICES.shared.keyfobs) + '/pack';
+            if(document.getElementById('price-label-4g')) document.getElementById('price-label-4g').innerText = '+' + formatPrice(PRICES.shared.saas4G) + '/mo per Hub/Modem';
+        }
+
+        // ==========================================
+        // NAVIGATION & UI
+        // ==========================================
+        function setBuildingType(type) { 
+            state.btype = type; 
+            document.querySelectorAll('.btype-btn').forEach(btn => {
+                if(btn.dataset.type === type) {
+                    btn.classList.add('border-[#00134D]', 'shadow-md');
+                    btn.classList.remove('border-transparent');
+                } else {
+                    btn.classList.remove('border-[#00134D]', 'shadow-md');
+                    btn.classList.add('border-transparent');
+                }
+            });
+
+            const tc = document.getElementById('tenant-container');
+            const tt = document.getElementById('tenant-title');
+            tc.classList.remove('hidden');
+            
+            if (type === 'Residential' || type === 'Student Housing') tt.innerText = "Number of apartments";
+            else if (type === 'Office' || type === 'Co-working') tt.innerText = "Number of tenants / companies";
+            else if (type === 'Hotel') tt.innerText = "Number of hotel rooms";
+            else tt.innerText = "Number of units / spaces";
+            
+            renderBOM();
+        }
+        
+        function setProjectStatus(status) {
+            state.pstatus = status;
+            renderBOM();
+        }
+
+        function setPricingModel(model) {
+            state.pricingModel = model;
+            const bg = document.getElementById('toggle-bg');
+            const btnCore = document.getElementById('btn-model-core');
+            const btnFlex = document.getElementById('btn-model-flex');
+
+            if (model === 'core') {
+                bg.style.left = '6px';
+                bg.style.transform = 'translateX(0)';
+                btnCore.classList.replace('text-[#A8C0F0]', 'text-[#00134D]');
+                btnFlex.classList.replace('text-[#00134D]', 'text-white');
+                btnFlex.classList.replace('text-[#A8C0F0]', 'text-white');
+            } else {
+                bg.style.left = '6px';
+                bg.style.transform = 'translateX(100%)';
+                btnCore.classList.replace('text-[#00134D]', 'text-white');
+                btnCore.classList.replace('text-[#A8C0F0]', 'text-white');
+                btnFlex.classList.replace('text-white', 'text-[#00134D]');
+                btnFlex.classList.replace('text-[#A8C0F0]', 'text-[#00134D]');
+            }
+            renderBOM();
+        }
+        
+        function toggleFlexAddon(type) {
+            if (state.pricingModel === 'core') return;
+            state.flexAddons[type] = !state.flexAddons[type];
+            renderBOM();
+        }
+
+        function checkStep0AndProceed() {
+            const errorBox = document.getElementById('step0-error-box');
+            const errorText = document.getElementById('step0-error-text');
+
+            if(!state.btype || !state.pstatus) {
+                if(errorText) errorText.innerText = "Please select both property type and project type before proceeding.";
+                if(errorBox) { errorBox.classList.remove('hidden'); errorBox.classList.add('flex'); }
+                return;
+            }
+            if(state.tenantCount <= 0) {
+                if(errorText) errorText.innerText = "Please specify the number of units (estimate is fine).";
+                if(errorBox) { errorBox.classList.remove('hidden'); errorBox.classList.add('flex'); }
+                return;
+            }
+            
+            if(errorBox) { errorBox.classList.add('hidden'); errorBox.classList.remove('flex'); }
+            nextStep();
+        }
+
+        // Generates a clean text breakdown of the active canvas topology
+        function generateTopologyTextSummary() {
+            if (state.nodes.length === 0) return "No doors configured.";
+            
+            let summary = `--- BUILDING ACCESS TOPOLOGY CONFIGURATION ---\n`;
+            state.nodes.forEach((node, index) => {
+                summary += `Door #${index + 1}: ${node.env || 'Main Entrance'} \n`;
+                summary += `  - Type: ${node.label} (${node.type})\n`;
+                if (node.isolated) {
+                    summary += `  - Connection: Isolated / Placed on a separate hub\n`;
+                } else {
+                    summary += `  - Connection: Shared / Normal local wiring\n`;
+                }
+            });
+            summary += `\n--- NETWORK ROUTING ---\n`;
+            summary += `Internet Connection Mode: ${state.network === '4g' ? 'Isolated Defigo 4G LTE eSIM' : "Client's LAN Building Network"}\n`;
+            return summary;
+        }
+
+        // Generates a clean text representation of the BOM pricing list
+        function generateBOMTextSummary(grandTotal, monthlySaaS) {
+            let summary = `--- HARDWARE STYCKLISTE / BOM ---\n`;
+            const bomListEl = document.getElementById('bom-list');
+            if (bomListEl) {
+                const listItems = bomListEl.querySelectorAll('li');
+                listItems.forEach(li => {
+                    const labelText = li.querySelector('span') ? li.querySelector('span').innerText : li.innerText;
+                    summary += `- ${labelText.replace(/\n/g, ' ')}\n`;
+                });
+            }
+            summary += `\n--- FINANCIAL ESTIMATION ---\n`;
+            summary += `Total Est. Hardware (CaPex MSRP): ${formatPrice(grandTotal)} USD\n`;
+            summary += `Total SaaS Subscription License (OpEx): ${formatPrice(monthlySaaS)} USD/month\n`;
+            summary += `Pricing Model Selected: ${state.pricingModel === 'core' ? 'Defigo Core' : 'Defigo Flex'}\n`;
+            return summary;
+        }
+
+        async function handleCheckout() {
+            const errorBox = document.getElementById('form-error-box');
+            const errorText = document.getElementById('form-error-text');
+            
+            const companyInput = document.getElementById('contact-company');
+            const firstnameInput = document.getElementById('contact-firstname');
+            const lastnameInput = document.getElementById('contact-lastname');
+            const emailInput = document.getElementById('contact-email');
+            const phoneInput = document.getElementById('contact-phone');
+            const projectInput = document.getElementById('contact-project');
+            
+            const company = companyInput ? companyInput.value.trim() : '';
+            const firstname = firstnameInput ? firstnameInput.value.trim() : '';
+            const lastname = lastnameInput ? lastnameInput.value.trim() : '';
+            const email = emailInput ? emailInput.value.trim() : '';
+            const phone = phoneInput ? phoneInput.value.trim() : '';
+            const project = projectInput ? projectInput.value.trim() : '';
+            
+            if(!company || !firstname || !lastname || !email || !phone || !project) {
+                if (errorText) errorText.innerText = 'Please fill out all required fields to submit your design.';
+                if (errorBox) { errorBox.classList.remove('hidden'); errorBox.classList.add('flex'); }
+                return;
+            }
+            
+            if (errorBox) { errorBox.classList.add('hidden'); errorBox.classList.remove('flex'); }
+            state.contact = { company, name: firstname + ' ' + lastname, email, phone, project };
+            
+            const btn = document.querySelector('button[onclick="handleCheckout()"]');
+            const originalBtnText = btn.innerHTML;
+            btn.innerHTML = 'Submitting... <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>';
+            btn.disabled = true;
+            lucide.createIcons();
+
+            // Calculate HubSpot variables
+            const mC = state.nodes.filter(n => n.type === 'main').length;
+            const mS = state.nodes.filter(n => n.type === 'main_standalone').length;
+            const totalMainDisplays = mC + mS;
+
+            const defigoSideNodes = state.nodes.filter(n => n.type === 'side');
+            const standardSideCount = defigoSideNodes.filter(n => !n.isolated).length;
+            const isolatedCount = defigoSideNodes.filter(n => n.isolated).length;
+            
+            const srSlimCount = state.nodes.filter(n => n.type === 'sr_slim').length;
+            const srStdCount = state.nodes.filter(n => n.type === 'sr_std').length;
+            const srPinCount = state.nodes.filter(n => n.type === 'sr_pin').length;
+            const totalSrCount = srSlimCount + srStdCount + srPinCount;
+
+            const freeRelaysFromMain = mC * 2;
+            const extraDoors = Math.max(0, standardSideCount - freeRelaysFromMain);
+            const extraHubs = Math.ceil(extraDoors / 3) + isolatedCount;
+            const eH = extraHubs;
+            const totalControlUnits = mC + extraHubs;
+            const billableExtraDoors = standardSideCount + isolatedCount + totalSrCount;
+
+            const poeDevices = totalSrCount + mS;
+            let poeInjectors = 0, switch8 = 0, switch24 = 0, switch48 = 0, modems = 0;
+            if(poeDevices > 0) {
+                modems = 1;
+                if(poeDevices === 1) poeInjectors = 1;
+                else if (poeDevices >= 2 && poeDevices <= 7) switch8 = 1;
+                else if (poeDevices >= 8 && poeDevices <= 23) switch24 = 1;
+                else if (poeDevices >= 24) switch48 = Math.ceil(poeDevices / 47);
+            }
+
+            const val4g = state.network === '4g' ? (totalControlUnits + modems).toString() : '0';
+            const valAccessVideo = (state.pricingModel === 'core' || state.flexAddons.access) ? 'Yes' : 'No';
+            const valSecurity = (state.pricingModel === 'core' || state.flexAddons.security) ? 'Yes' : 'No';
+            const valAdmin = (state.pricingModel === 'core' || state.flexAddons.admin) ? 'Yes' : 'No';
+
+            const mappedPriceModel = state.pricingModel === 'core' ? 'Basic/Core' : 'Flex';
+
+            const bTypeMap = {
+                'Residential': 'Multi Dwelling Units',
+                'Office': 'Office Building',
+                'Co-working': 'Co-Working',
+                'Student Housing': 'Student Housing',
+                'Mixed-use': 'Mixed-use',
+                'Logistics': 'Logistics',
+                'Industrial': 'Industrial',
+                'Hotel': 'Hotel',
+                'Retail': 'Retail',
+                'Other': 'Other'
+            };
+            const pStatusMap = {
+                'New Construction': 'New Construction',
+                'Retrofit/Renovation': 'Rehab'
+            };
+            const mappedEstateSegment = bTypeMap[state.btype] || state.btype;
+            const mappedProjectType = pStatusMap[state.pstatus] || state.pstatus;
+            const totalKeyTags = state.addons.keyfobs * 50;
+
+            // Recalculate local prices to feed CRM numeric parameters
+            let pModel = PRICES[state.pricingModel];
+            let shared = PRICES.shared;
+            const ioModuleCount = state.nodes.filter(n => n.type.startsWith('sr_') && n.isolated).length;
+            
+            const finalGrandTotal = (mC * pModel.bundle) + (mS * pModel.standalone) + (eH * pModel.extraHub) + 
+                               (state.addons.inWall * shared.inWall) + (state.addons.secuFrame * shared.secuFrame) + 
+                               (state.addons.intercom * shared.intercom) + (state.addons.homeStationStand * shared.homeStationStand) + 
+                               (state.addons.keyfobs * shared.keyfobs) + 
+                               (srSlimCount * shared.srSlim) + (srStdCount * shared.srStandard) + (srPinCount * shared.srPin) + 
+                               (poeInjectors * shared.poeInjector) + (switch8 * shared.switch8) + (switch24 * shared.switch24) + (switch48 * shared.switch48) + 
+                               (state.network === '4g' ? (modems * shared.modem) : 0) + 
+                               (ioModuleCount * shared.ioModule);
+
+            const isCommercial = (state.btype === 'Office' || state.btype === 'Co-working');
+            const flexAccessPrice = isCommercial ? 7.50 : 2.50;
+            const flexSecurityPrice = 13.99;
+            const flexAdminPrice = 9.99;
+
+            let finalSaaS = 0; 
+            if(state.pricingModel === 'core') { 
+                const bU = Math.max(45, state.tenantCount); 
+                finalSaaS = ((bU * 35)/12) + (Math.max(0, state.nodes.length - totalMainDisplays) * 6.90); 
+            } else { 
+                if(state.flexAddons.access) finalSaaS += state.tenantCount * flexAccessPrice; 
+                if(state.flexAddons.security) finalSaaS += state.nodes.length * flexSecurityPrice; 
+                if(state.flexAddons.admin) finalSaaS += state.nodes.length * flexAdminPrice; 
+            }
+            if(state.network === '4g') finalSaaS += (mC + eH + modems) * 29.99;
+
+            // Build structural summaries instead of static placeholders
+            const dynamicBOMSummary = generateBOMTextSummary(finalGrandTotal, finalSaaS);
+            const dynamicTopologySummary = generateTopologyTextSummary();
+
+            // Fetch HubSpot Tracking Token
+            const trackingUtk = getCookie('hubspotutk') || "";
+
+            const payload = {
+                fields: [
+                    { name: "estate_segment", value: mappedEstateSegment || "" },
+                    { name: "project_type", value: mappedProjectType || "" },
+                    { name: "nygbyggrehab_partner_tilbudsregistrering", value: state.pstatus || "" },
+                    { name: "number_of_groups", value: state.tenantCount.toString() },
+                    { name: "price_model", value: mappedPriceModel },
+                    { name: "number_of_displays_", value: totalMainDisplays.toString() },
+                    { name: "number_of_control_units", value: totalControlUnits.toString() },
+                    { name: "extra_relay", value: billableExtraDoors.toString() },
+                    { name: "modem", value: modems.toString() },
+                    { name: "suprema_reader_regular", value: srStdCount.toString() },
+                    { name: "suprema_reader_slim", value: srSlimCount.toString() },
+                    { name: "suprema_reader_keypad", value: srPinCount.toString() },
+                    { name: "poe_injector", value: poeInjectors.toString() },
+                    { name: "number_of_switches_8_port", value: switch8.toString() },
+                    { name: "number_of_switches_24_port", value: switch24.toString() },
+                    { name: "number_of_switches_48_port", value: switch48.toString() },
+                    { name: "defigo_4g", value: val4g },
+                    { name: "inwall", value: state.addons.inWall.toString() },
+                    { name: "secuframe", value: state.addons.secuFrame.toString() },
+                    { name: "number_of_answering_devices", value: state.addons.intercom.toString() },
+                    { name: "number_of_table_stands", value: state.addons.homeStationStand.toString() },
+                    { name: "number_of_key_tags_contact", value: totalKeyTags.toString() },
+                    { name: "adgangsbrikke", value: totalKeyTags.toString() },
+                    { name: "access_and_videointercom", value: valAccessVideo },
+                    { name: "security_services", value: valSecurity },
+                    { name: "admin__control", value: valAdmin },
+                    { name: "partnernavn", value: company },
+                    { name: "firstname", value: firstname },
+                    { name: "lastname", value: lastname },
+                    { name: "email", value: email },
+                    { name: "phone", value: phone },
+                    { name: "address_of_installation", value: project },
+                    { name: "partner_quote_sketch", value: dynamicTopologySummary },
+                    { name: "partner_quote_summary", value: dynamicBOMSummary },
+                    // Structured financial properties for advanced CRM Deals
+                    { name: "total_capex_value", value: finalGrandTotal.toFixed(2) },
+                    { name: "total_monthly_saas_value", value: finalSaaS.toFixed(2) }
+                ],
+                context: { 
+                    pageUri: window.location.href, 
+                    pageName: document.title,
+                    hutk: trackingUtk
+                }
+            };
+
+            try {
+                await fetch('https://api.hsforms.com/submissions/v3/integration/submit/9458866/b44b118d-21c5-4571-9cf0-d0a0f8385934', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (error) { 
+                console.error('HubSpot error:', error); 
+            } finally {
+                btn.innerHTML = originalBtnText; 
+                btn.disabled = false;
+                lucide.createIcons(); 
+                nextStep();
+            }
+        }
+
+        async function downloadSummary() {
+            const btn = document.getElementById('btn-download');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Generating... <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>';
+            btn.disabled = true;
+            lucide.createIcons();
+
+            try {
+                const summaryEl = document.getElementById('receipt-capture-area');
+                if(summaryEl) {
+                    const canvasSum = await html2canvas(summaryEl, { scale: 2, backgroundColor: '#EDF0FC' });
+                    const linkSum = document.createElement('a');
+                    linkSum.download = 'Defigo_Summary.png';
+                    linkSum.href = canvasSum.toDataURL('image/png');
+                    linkSum.click();
+                }
+
+                const topoContainer = document.getElementById('topology-container');
+                if (topoContainer && topoContainer.innerHTML.trim() !== '') {
+                    const exportWrapper = document.createElement('div');
+                    exportWrapper.style.width = '1000px';
+                    exportWrapper.style.position = 'absolute';
+                    exportWrapper.style.left = '-9999px';
+                    exportWrapper.style.top = '0';
+                    exportWrapper.style.backgroundColor = '#030617';
+                    exportWrapper.style.backgroundImage = 'radial-gradient(rgba(168, 192, 240, 0.15) 1px, transparent 1px)';
+                    exportWrapper.style.backgroundSize = '20px 20px';
+                    exportWrapper.style.padding = '40px';
+                    exportWrapper.style.display = 'block';
+
+                    const clone = topoContainer.cloneNode(true);
+                    clone.style.width = '100%';
+                    clone.style.opacity = '1';
+                    
+                    exportWrapper.appendChild(clone);
+                    document.body.appendChild(exportWrapper);
+
+                    const trackedElements = clone.querySelectorAll('.tracking-wider, .tracking-widest');
+                    trackedElements.forEach(el => el.style.letterSpacing = 'normal');
+                    
+                    const selects = clone.querySelectorAll('select');
+                    selects.forEach(select => {
+                        const selectedText = select.options[select.selectedIndex]?.text || '';
+                        const textDiv = document.createElement('div');
+                        textDiv.textContent = selectedText;
+                        textDiv.className = select.className;
+                        textDiv.style.borderBottom = 'none';
+                        textDiv.style.color = '#fff';
+                        select.parentNode.replaceChild(textDiv, select);
+                    });
+                    
+                    const chevrons = clone.querySelectorAll('[data-lucide="chevron-down"]');
+                    chevrons.forEach(ch => ch.remove());
+
+                    const h24Els = clone.querySelectorAll('.h-24');
+                    h24Els.forEach(el => {
+                        el.classList.remove('h-24');
+                        el.style.height = 'auto';
+                        el.style.minHeight = '115px';
+                    });
+
+                    const allDivs = clone.querySelectorAll('div');
+                    allDivs.forEach(div => {
+                        if (div.classList.contains('p-3.5') || div.className.includes('p-3.5')) {
+                            div.classList.remove('p-3.5');
+                            div.style.padding = '18px';
+                        }
+                    });
+
+                    const svgs = clone.querySelectorAll('.conn-svg');
+                    svgs.forEach(svg => {
+                        const wrapper = svg.parentNode;
+                        wrapper.innerHTML = '<div style="width: 100%; height: 2px; border-bottom: 2px dashed #5CD67A; margin-top: -1px;"></div>';
+                    });
+
+                    await new Promise(res => setTimeout(res, 300));
+                    
+                    const canvasTopo = await html2canvas(exportWrapper, { scale: 2, backgroundColor: '#030617' });
+                    const linkTopo = document.createElement('a');
+                    linkTopo.download = 'Defigo_Topology.png';
+                    linkTopo.href = canvasTopo.toDataURL('image/png');
+                    linkTopo.click();
+
+                    document.body.removeChild(exportWrapper);
+                }
+
+            } catch (err) {
+                console.error('Download failed', err);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                lucide.createIcons();
+            }
+        }
+
+        function handleBomNext() {
+            if (state.step === 3) handleCheckout();
+            else nextStep();
+        }
+
+        function nextStep() {
+            if(state.step < 4) {
+                state.step++; renderUI();
+                const scrollArea = document.getElementById('main-scroll-area');
+                if(scrollArea) scrollArea.scrollTo({top: 0, behavior: 'smooth'});
+            }
+        }
+
+        function prevStep() {
+            if(state.step > 0) {
+                state.step--; renderUI();
+                const scrollArea = document.getElementById('main-scroll-area');
+                if(scrollArea) scrollArea.scrollTo({top: 0, behavior: 'smooth'});
+            }
+        }
+
+        function toggleMobileBOM() {
+            const sidebar = document.getElementById('bom-sidebar');
+            if(sidebar) sidebar.classList.toggle('translate-x-full');
+        }
+
+        function setNetwork(type) {
+            state.network = type;
+            const btnWired = document.getElementById('btn-net-wired');
+            const btn4g = document.getElementById('btn-net-4g');
+            const icon4g = document.getElementById('icon-net-4g');
+            btnWired.classList.replace('border-[#00134D]', 'border-transparent');
+            btnWired.classList.replace('bg-white', 'bg-white/60');
+            btn4g.classList.replace('border-emerald-500', 'border-transparent');
+            btn4g.classList.replace('bg-white', 'bg-white/60');
+            icon4g.classList.replace('text-emerald-500', 'text-gray-400');
+            if(type === 'wired') { btnWired.classList.replace('border-transparent', 'border-[#00134D]'); btnWired.classList.replace('bg-white/60', 'bg-white'); }
+            if(type === '4g') { btn4g.classList.replace('border-transparent', 'border-emerald-500'); btn4g.classList.replace('bg-white/60', 'bg-white'); icon4g.classList.replace('text-gray-400', 'text-emerald-500'); }
+            renderBOM();
+        }
+
+        function updateAddon(type, change) {
+            const mainCount = state.nodes.filter(n => n.type === 'main' || n.type === 'main_standalone').length;
+            let current = state.addons[type];
+            let nextVal = Math.max(0, current + change);
+            if (type === 'inWall' || type === 'secuFrame') {
+                const otherType = type === 'inWall' ? 'secuFrame' : 'inWall';
+                if (nextVal + state.addons[otherType] > mainCount) nextVal = mainCount - state.addons[otherType];
+            }
+            state.addons[type] = nextVal;
+            const addonInput = document.getElementById(`val-addon-${type}`);
+            if (addonInput) addonInput.value = nextVal;
+            renderBOM();
+        }
+
+        function setAddon(type, val) {
+            const mainCount = state.nodes.filter(n => n.type === 'main' || n.type === 'main_standalone').length;
+            let nextVal = Math.max(0, parseInt(val) || 0);
+            if (type === 'inWall' || type === 'secuFrame') {
+                const otherType = type === 'inWall' ? 'secuFrame' : 'inWall';
+                if (nextVal + state.addons[otherType] > mainCount) nextVal = mainCount - state.addons[otherType];
+            }
+            state.addons[type] = nextVal;
+            const addonInput = document.getElementById(`val-addon-${type}`);
+            if (addonInput) addonInput.value = nextVal;
+            renderBOM();
+        }
+
+        function addNode(type, label) {
+            try {
+                const id = Date.now() + Math.floor(Math.random() * 1000);
+                let env = (type === 'main' || type === 'main_standalone') ? 'Main Entrance' : 'Interior Door';
+                state.nodes.push({ id, type, label, env, isolated: false });
+                const menu = document.getElementById('fab-menu');
+                const icon = document.getElementById('fab-icon');
+                if(menu) { menu.classList.replace('scale-100', 'scale-95'); menu.classList.replace('opacity-100', 'opacity-0'); setTimeout(() => { menu.classList.add('hidden'); }, 300); }
+                if(icon) icon.classList.remove('rotate-45');
+                renderTopology(); updateStaticPrices(); renderBOM();
+            } catch(e) { console.error("Error:", e); }
+        }
+
+        function removeNode(id) {
+            state.nodes = state.nodes.filter(n => n.id !== id);
+            const mainCount = state.nodes.filter(n => n.type === 'main' || n.type === 'main_standalone').length;
+            if ((state.addons.inWall + state.addons.secuFrame) > mainCount) {
+                state.addons.inWall = Math.min(state.addons.inWall, mainCount);
+                state.addons.secuFrame = Math.min(state.addons.secuFrame, mainCount - state.addons.inWall);
+                document.getElementById('val-addon-inWall').value = state.addons.inWall;
+                document.getElementById('val-addon-secuFrame').value = state.addons.secuFrame;
+            }
+            renderTopology(); updateStaticPrices(); renderBOM();
+        }
+
+        function toggleIsolated(id) {
+            state.nodes = state.nodes.map(n => n.id === id ? { ...n, isolated: !n.isolated } : n);
+            renderTopology(); updateStaticPrices(); renderBOM();
+        }
+        
+        function updateNodeEnv(id, val) {
+            state.nodes = state.nodes.map(n => n.id === id ? { ...n, env: val } : n);
+        }
+
+        function renderTopology() {
+            const container = document.getElementById('topology-container');
+            const emptyState = document.getElementById('empty-state');
+            if(!container) return;
+            if(state.nodes.length === 0) { container.innerHTML = ''; if(emptyState) emptyState.style.display = 'block'; return; }
+            if(emptyState) emptyState.style.display = 'none';
+            container.innerHTML = '';
+
+            // Group 1: Native Defigo with Hubs
+            let defigoNodes = state.nodes.filter(n => n.type === 'main' || n.type === 'side');
+            let hubGroups = [];
+            let mainNodes = defigoNodes.filter(n => n.type === 'main');
+            let sideNodes = [...defigoNodes.filter(n => n.type === 'side' && !n.isolated)];
+            let isolatedNodes = defigoNodes.filter(n => n.type === 'side' && n.isolated);
+            mainNodes.forEach(main => { hubGroups.push({ id: 'hub_' + main.id, type: 'included', doors: [main] }); });
+            hubGroups.forEach(hub => { while(hub.doors.length < 3 && sideNodes.length > 0) { hub.doors.push(sideNodes.shift()); } });
+            while(sideNodes.length > 0) {
+                const hub = { id: 'hub_extra_' + Math.random(), type: 'extra', doors: [] };
+                while(hub.doors.length < 3 && sideNodes.length > 0) { hub.doors.push(sideNodes.shift()); }
+                hubGroups.push(hub);
+            }
+            isolatedNodes.forEach(iso => { hubGroups.push({ id: 'hub_iso_' + iso.id, type: 'extra', isolated: true, doors: [iso] }); });
+
+            // Group 2: Suprema Readers + Standalone Displays (Both require PoE routing)
+            let supremaNodes = state.nodes.filter(n => n.type.startsWith('sr_') || n.type === 'main_standalone');
+            let srHubGroups = [];
+            if(supremaNodes.length > 0) {
+                let totalSrCount = supremaNodes.length;
+                let switchTitle = "PoE Injector"; let capacity = 1;
+                if (totalSrCount >= 2 && totalSrCount <= 7) { switchTitle = "8-port Switch"; capacity = 7; }
+                else if (totalSrCount >= 8 && totalSrCount <= 23) { switchTitle = "24-port Switch"; capacity = 23; }
+                else if (totalSrCount >= 24) { switchTitle = "48-port Switch"; capacity = 47; }
+                let tempSr = [...supremaNodes];
+                while(tempSr.length > 0) {
+                    const hub = { id: 'sr_hub_' + Math.random(), type: 'suprema', isFirst: srHubGroups.length === 0, switchTitle: switchTitle, doors: [] };
+                    while(hub.doors.length < capacity && tempSr.length > 0) { hub.doors.push(tempSr.shift()); }
+                    srHubGroups.push(hub);
+                }
+            }
+
+            const allGroups = [...hubGroups, ...srHubGroups];
+            allGroups.forEach((hub) => {
+                const groupEl = document.createElement('div');
+                groupEl.className = 'node-enter relative w-full flex items-stretch justify-between z-10';
+                let doorsHTML = hub.doors.map((door) => {
+                    let isMain = door.type === 'main'; 
+                    let isStandalone = door.type === 'main_standalone';
+                    let isSr = door.type.startsWith('sr_');
+                    
+                    let icon, bgColor, iconBg, iconColor, badges = `<span class="bg-[#5CD67A]/20 text-[#5CD67A] text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border border-[#5CD67A]/50 shadow-sm">Mobile Access</span>`;
+                    
+                    if(isStandalone || isMain) {
+                        icon = 'smartphone';
+                        bgColor = 'bg-[#00134D] text-white border-[#1A243D] shadow-2xl w-60';
+                        iconBg = 'bg-white/10'; 
+                        iconColor = 'text-[#5CD67A]';
+                        badges = `<span class="bg-[#00134D] text-[#A8C0F0] text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border border-[#A8C0F0]/50 shadow-sm">RFID</span>` + badges;
+                    } else if(isSr) {
+                        icon = door.type === 'sr_slim' ? 'rectangle-vertical' : (door.type === 'sr_pin' ? 'layout-grid' : 'credit-card');
+                        bgColor = 'bg-white text-[#00134D] border-[#5CD67A]/50 shadow-xl w-56'; iconBg = 'bg-[#EDF0FC] border-[#5CD67A]/50'; iconColor = 'text-[#5CD67A]';
+                        badges = `<span class="bg-[#00134D] text-[#A8C0F0] text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border border-[#A8C0F0]/50 shadow-sm">RFID</span>` + badges;
+                    } else {
+                        icon = 'smartphone-nfc';
+                        bgColor = 'bg-white text-[#00134D] border-[#A8C0F0]/50 shadow-xl w-56';
+                        iconBg = 'bg-[#EDF0FC]'; iconColor = 'text-[#00134D]';
+                    }
+                    
+                    let isoBadge = !isMain && !isStandalone && door.isolated ? `<div class="absolute -bottom-3 right-4 bg-[#00134D] text-white text-[9px] font-bold uppercase px-3 py-1 rounded-full shadow-lg z-50 border border-[#A8C0F0]/50 flex items-center gap-1.5"><i data-lucide="${isSr?'shield-check':'unlink'}" class="w-3 h-3 text-[#5CD67A]"></i> ${isSr?'Secure I/O':'Separate Hub'}</div>` : '';
+                    
+                    return `<div class="flex items-center justify-end w-full relative group h-24">
+                        <div class="${bgColor} p-3.5 rounded-2xl flex items-center gap-3 border relative z-20 transition-all">
+                            <button onclick="removeNode(${door.id})" class="absolute -top-3 -left-3 bg-[#FF7366] text-white rounded-full p-2 opacity-0 group-hover:opacity-100 shadow-lg"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+                            ${(!isMain && !isStandalone) ? `<button onclick="toggleIsolated(${door.id})" class="absolute -top-3 left-6 ${door.isolated?'bg-[#5CD67A]':'bg-[#00134D]'} text-white shadow-lg rounded-full p-2 opacity-0 group-hover:opacity-100 transition"><i data-lucide="${door.isolated?(isSr?'unlock':'link'):(isSr?'lock':'unlink')}" class="w-3.5 h-3.5"></i></button>` : ''}
+                            <div class="w-10 h-14 ${iconBg} rounded-xl flex items-center justify-center shrink-0 border"><i data-lucide="${icon}" class="w-5 h-5 ${iconColor}"></i></div>
+                            <div class="flex-1 min-w-0">
+                                <div class="relative w-full mb-1"><select onchange="updateNodeEnv(${door.id}, this.value)" class="w-full bg-transparent font-outfit font-bold text-sm outline-none appearance-none pr-4 border-b border-dashed ${(isMain||isStandalone)?'border-[#5CD67A]/50':'border-[#00134D]/30'}">
+                                    <option value="Main Entrance" ${door.env==='Main Entrance'?'selected':''}>Main Entrance</option><option value="Side Door" ${door.env==='Side Door'?'selected':''}>Side Door</option><option value="Garage" ${door.env==='Garage'?'selected':''}>Garage</option><option value="Bike Room" ${door.env==='Bike Room'?'selected':''}>Bike Room</option><option value="Interior Door" ${door.env==='Interior Door'?'selected':''}>Interior Door</option>
+                                </select><i data-lucide="chevron-down" class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 opacity-50"></i></div>
+                                <p class="text-[10px] opacity-70 uppercase tracking-wider mb-1.5 truncate">${door.label}</p><div class="flex gap-1.5 flex-wrap">${badges}</div>
+                            </div>${isoBadge}
+                        </div><div class="w-8 h-[2px] bg-[#5CD67A]/60 z-10 relative"></div></div>`;
+                }).join('');
+                
+                let spineHTML = hub.doors.length > 1 ? `<div class="absolute right-0 top-10 bottom-10 w-[2px] bg-[#5CD67A]/60"></div>` : '';
+                let ctrl = hub.type === 'suprema' ? `<div class="bg-white text-[#00134D] p-4 rounded-2xl flex items-center gap-4 border border-[#A8C0F0]/50 w-56 shadow-xl relative shrink-0 z-10">${hub.isFirst?`<div class="absolute -top-12 left-1/2 -translate-x-1/2 flex flex-col items-center"><div class="bg-[#00134D] text-white px-3 py-1.5 rounded-xl border border-[#A8C0F0]/30 flex items-center gap-2 shadow-lg"><i data-lucide="radio" class="w-4 h-4 text-[#A8C0F0]"></i><span class="text-[10px] font-bold uppercase">Router</span></div><div class="h-4 w-[2px] bg-[#5CD67A]/60"></div></div>`:''}<div class="w-12 h-12 bg-[#EDF0FC] rounded-xl flex items-center justify-center border shrink-0"><i data-lucide="network" class="w-6 h-6"></i></div><div><p class="font-outfit font-bold text-sm leading-tight">${hub.switchTitle}</p><p class="text-[10px] text-gray-500 mt-0.5">PoE Powered</p></div></div>` :
+                                                  `<div class="bg-[#00134D] text-white p-4 rounded-2xl flex items-center gap-4 border border-[#A8C0F0]/30 w-56 shadow-xl shrink-0 z-10"><div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center border border-white/20 shrink-0"><i data-lucide="cpu" class="w-6 h-6 text-[#5CD67A]"></i></div><div><p class="font-outfit font-bold text-base leading-tight">${hub.type==='included'?'Relay Hub':'Extra Relay Hub'}</p><p class="text-[10px] text-[#A8C0F0] mt-0.5">${hub.type==='included'?'(Defigo)':(hub.isolated?'(Separate)':'Auto-added')}</p></div></div>`;
+                groupEl.innerHTML = `<div class="w-[45%] flex flex-col gap-4 justify-center relative py-4">${spineHTML}${doorsHTML}</div><div class="w-[10%] flex items-center justify-center"><div class="w-full h-[2px] bg-[#5CD67A]/60"></div></div><div class="w-[45%] pl-4 flex items-center">${ctrl}<div class="flex-1 flex justify-center opacity-80 min-w-[50px]"><svg class="conn-svg" width="100%" height="2"><line x1="0" y1="1" x2="100%" y2="1" stroke="#5CD67A" stroke-width="2" class="wireless-line"></line></svg></div><div class="flex flex-col items-center text-white shrink-0 w-16 bg-[#00134D] py-3 rounded-2xl border border-[#A8C0F0]/30 shadow-lg"><i data-lucide="cloud" class="w-6 h-6 mb-1 text-[#5CD67A] animate-pulse"></i><span class="text-[9px]">Cloud</span></div></div>`;
+                container.appendChild(groupEl);
+            });
+
+            lucide.createIcons();
+        }
+
+        function renderBOM() {
+            let pModel = PRICES[state.pricingModel]; let shared = PRICES.shared; let isCore = state.pricingModel === 'core';
+            
+            const mC = state.nodes.filter(n => n.type === 'main').length;
+            const mS = state.nodes.filter(n => n.type === 'main_standalone').length;
+            const totalMainDisplays = mC + mS;
+
+            const defSide = state.nodes.filter(n => n.type === 'side');
+            
+            const freeRelaysFromMain = mC * 2; // Endast Display + Hub ger lediga reläer
+            const eD = Math.max(0, defSide.filter(n => !n.isolated).length - freeRelaysFromMain);
+            const eH = Math.ceil(eD / 3) + defSide.filter(n => n.isolated).length;
+            
+            const totalDoorsAll = state.nodes.length;
+            
+            const srSlim = state.nodes.filter(n => n.type === 'sr_slim').length;
+            const srStd = state.nodes.filter(n => n.type === 'sr_std').length;
+            const srPin = state.nodes.filter(n => n.type === 'sr_pin').length;
+            const totalSr = srSlim + srStd + srPin;
+            const ioModuleCount = state.nodes.filter(n => n.type.startsWith('sr_') && n.isolated).length;
+
+            // Både Suprema och Standalone Displays drivs via PoE och switchas ihop
+            const poeDevices = totalSr + mS;
+            let pI = 0, s8 = 0, s24 = 0, s48 = 0, modems = poeDevices > 0 ? 1 : 0;
+            if (poeDevices === 1) {
+                pI = 1;
+            } else if (poeDevices >= 2 && poeDevices <= 7) {
+                s8 = 1;
+            } else if (poeDevices >= 8 && poeDevices <= 23) {
+                s24 = 1;
+            } else if (poeDevices >= 24) {
+                s48 = Math.ceil(poeDevices / 47);
+            }
+
+            const grandTotal = (mC * pModel.bundle) + (mS * pModel.standalone) + (eH * pModel.extraHub) + 
+                               (state.addons.inWall * shared.inWall) + (state.addons.secuFrame * shared.secuFrame) + 
+                               (state.addons.intercom * shared.intercom) + (state.addons.homeStationStand * shared.homeStationStand) + 
+                               (state.addons.keyfobs * shared.keyfobs) + 
+                               (srSlim * shared.srSlim) + (srStd * shared.srStandard) + (srPin * shared.srPin) + 
+                               (pI * shared.poeInjector) + (s8 * shared.switch8) + (s24 * shared.switch24) + (s48 * shared.switch48) + 
+                               (state.network === '4g' ? (modems * shared.modem) : 0) + 
+                               (ioModuleCount * shared.ioModule);
+
+            const isCommercial = (state.btype === 'Office' || state.btype === 'Co-working');
+            const flexAccessPrice = isCommercial ? 7.50 : 2.50;
+            const flexSecurityPrice = 13.99;
+            const flexAdminPrice = 9.99;
+
+            let lic = 0; 
+            if(isCore) { 
+                const bU = Math.max(45, state.tenantCount); 
+                lic = ((bU * 35)/12) + (Math.max(0, totalDoorsAll - totalMainDisplays) * 6.90); 
+            } else { 
+                if(state.flexAddons.access) lic += state.tenantCount * flexAccessPrice; 
+                if(state.flexAddons.security) lic += totalDoorsAll * flexSecurityPrice; 
+                if(state.flexAddons.admin) lic += totalDoorsAll * flexAdminPrice; 
+            }
+            if(state.network === '4g') lic += (mC + eH + modems) * 29.99;
+
+            document.getElementById('bom-total-capex').innerText = formatPrice(grandTotal);
+            document.getElementById('mobile-bar-price').innerText = formatPrice(grandTotal);
+            document.getElementById('bom-total-license').innerText = formatPrice(lic) + '/mo';
+            document.getElementById('receipt-capex').innerText = formatPrice(grandTotal);
+            document.getElementById('receipt-license').innerText = formatPrice(lic) + '/mo';
+            
+            // Standalone ger inga free relays
+            document.getElementById('bom-free-relays').innerText = ((mC + eH) * 3) - (mC + defSide.length);
+
+            // Update SaaS Labels in Step 2
+            const lblAccessPrice = document.getElementById('lbl-flex-access-price');
+            const lblSecurityPrice = document.getElementById('lbl-flex-security-price');
+            const lblAdminPrice = document.getElementById('lbl-flex-admin-price');
+            
+            if (isCore) {
+                if (lblAccessPrice) lblAccessPrice.innerHTML = `<span class="text-[#5CD67A]">Included</span>`;
+                if (lblSecurityPrice) lblSecurityPrice.innerHTML = `<span class="text-[#5CD67A]">Included</span>`;
+                if (lblAdminPrice) lblAdminPrice.innerHTML = `<span class="text-[#5CD67A]">Included</span>`;
+            } else {
+                if (lblAccessPrice) lblAccessPrice.innerHTML = `${formatPrice(flexAccessPrice)} <span class="text-[10px] text-gray-500 font-normal">/unit</span><div class="text-[10px] text-gray-500 font-normal mt-1 border-t border-[#A8C0F0]/50 pt-1">Total: ${formatPrice(state.tenantCount * flexAccessPrice)}/mo</div>`;
+                if (lblSecurityPrice) lblSecurityPrice.innerHTML = `${formatPrice(flexSecurityPrice)} <span class="text-[10px] text-gray-500 font-normal">/door</span><div class="text-[10px] text-gray-500 font-normal mt-1 border-t border-[#A8C0F0]/50 pt-1">Total: ${formatPrice(totalDoorsAll * flexSecurityPrice)}/mo</div>`;
+                if (lblAdminPrice) lblAdminPrice.innerHTML = `${formatPrice(flexAdminPrice)} <span class="text-[10px] text-gray-500 font-normal">/door</span><div class="text-[10px] text-gray-500 font-normal mt-1 border-t border-[#A8C0F0]/50 pt-1">Total: ${formatPrice(totalDoorsAll * flexAdminPrice)}/mo</div>`;
+            }
+
+            const btnAccess = document.getElementById('btn-flex-access');
+            const btnSecurity = document.getElementById('btn-flex-security');
+            const btnAdmin = document.getElementById('btn-flex-admin');
+            
+            const updateFlexBtnUI = (btn, iconId, isActive, forceCoreLock) => {
+                const icon = document.getElementById(iconId);
+                if (!btn || !icon) return;
+                if (forceCoreLock) {
+                    btn.className = "p-6 rounded-[2rem] border-2 text-left relative flex flex-col h-full bg-[#5CD67A]/5 border-[#5CD67A]/40 cursor-default opacity-100 transition-all";
+                    icon.className = "w-6 h-6 rounded-full bg-[#5CD67A] flex items-center justify-center text-white";
+                } else if (isActive) {
+                    btn.className = "p-6 rounded-[2rem] border-2 text-left relative flex flex-col h-full bg-white border-[#00134D] shadow-lg cursor-pointer transform scale-[1.02] transition-all";
+                    icon.className = "w-6 h-6 rounded-full bg-[#00134D] flex items-center justify-center text-white";
+                } else {
+                    btn.className = "p-6 rounded-[2rem] border-2 text-left relative flex flex-col h-full bg-white border-[#A8C0F0]/50 hover:border-[#00134D] cursor-pointer transition-all";
+                    icon.className = "w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center text-transparent";
+                }
+            };
+
+            updateFlexBtnUI(btnAccess, 'icon-check-access', state.flexAddons.access, isCore);
+            updateFlexBtnUI(btnSecurity, 'icon-check-security', state.flexAddons.security, isCore);
+            updateFlexBtnUI(btnAdmin, 'icon-check-admin', state.flexAddons.admin, isCore);
+
+            const badgeCore = document.getElementById('flex-badge-core');
+            const badgeFlex = document.getElementById('flex-badge-flex');
+            if (badgeCore && badgeFlex) {
+                if (isCore) { badgeCore.classList.remove('hidden'); badgeFlex.classList.add('hidden'); }
+                else { badgeCore.classList.add('hidden'); badgeFlex.classList.remove('hidden'); }
+            }
+
+            let perUnitText = "";
+            if (lic > 0 && state.tenantCount > 0) {
+                const perUnit = lic / state.tenantCount;
+                perUnitText = `Approx. ${formatPrice(perUnit)} per unit/month`;
+            }
+            const bpuc = document.getElementById('bom-per-unit-cost');
+            const rpuc = document.getElementById('receipt-per-unit-cost');
+            if (perUnitText) {
+                if(bpuc) { bpuc.innerText = perUnitText; bpuc.classList.remove('hidden'); bpuc.classList.add('block'); }
+                if(rpuc) { rpuc.innerText = perUnitText; rpuc.classList.remove('hidden'); rpuc.classList.add('block'); }
+            } else {
+                if(bpuc) { bpuc.classList.add('hidden'); bpuc.classList.remove('block'); }
+                if(rpuc) { rpuc.classList.add('hidden'); rpuc.classList.remove('block'); }
+            }
+
+            let breakdownHTML = '';
+            if (isCore) {
+                const billableUnits = Math.max(45, state.tenantCount);
+                breakdownHTML += `<div class="flex justify-between text-xs text-emerald-800 font-medium"><span>Core License (${billableUnits} Units)</span><span>${formatPrice((billableUnits * pModel.saasBase)/12)}/mo</span></div>`;
+                if (state.tenantCount < 45) breakdownHTML += `<div class="text-[9px] text-emerald-700/70 italic">*Minimum order: 45 units</div>`;
+                if (totalDoorsAll > totalMainDisplays) breakdownHTML += `<div class="flex justify-between text-xs text-emerald-800 font-medium mt-1"><span>Extra Doors (${totalDoorsAll - totalMainDisplays}x)</span><span>${formatPrice((totalDoorsAll - totalMainDisplays) * pModel.saasExtraDoor)}/mo</span></div>`;
+            } else {
+                breakdownHTML += `<div class="flex justify-between text-xs text-emerald-800 font-medium"><span>Flex Start Base</span><span>$0.00</span></div>`;
+                if (state.flexAddons.access) breakdownHTML += `<div class="flex justify-between text-xs text-emerald-800 font-medium mt-1"><span>Access & Intercom (${state.tenantCount}x)</span><span>${formatPrice(state.tenantCount * flexAccessPrice)}/mo</span></div>`;
+                if (state.flexAddons.security) breakdownHTML += `<div class="flex justify-between text-xs text-emerald-800 font-medium mt-1"><span>Security Services (${totalDoorsAll}x)</span><span>${formatPrice(totalDoorsAll * flexSecurityPrice)}/mo</span></div>`;
+                if (state.flexAddons.admin) breakdownHTML += `<div class="flex justify-between text-xs text-emerald-800 font-medium mt-1"><span>Admin & Control (${totalDoorsAll}x)</span><span>${formatPrice(totalDoorsAll * flexAdminPrice)}/mo</span></div>`;
+            }
+            if (state.network === '4g' && (mC + eH + modems) > 0) breakdownHTML += `<div class="flex justify-between text-xs text-emerald-800 font-medium mt-1 border-t border-emerald-200 pt-1"><div class="flex-1"><span class="font-bold text-[#00134D] block">4G LTE Connect (${mC + eH + modems}x)</span></div><span class="font-bold text-[#5CD67A]">${formatPrice((mC + eH + modems) * shared.saas4G)}/mo</span></div>`;
+            
+            const bomLicenseBreakdown = document.getElementById('bom-license-breakdown');
+            const receiptLicenseBreakdown = document.getElementById('receipt-license-breakdown');
+            if(bomLicenseBreakdown) {
+                bomLicenseBreakdown.innerHTML = breakdownHTML;
+                bomLicenseBreakdown.classList.toggle('hidden', breakdownHTML === '');
+            }
+            if(receiptLicenseBreakdown) {
+                receiptLicenseBreakdown.innerHTML = breakdownHTML;
+                receiptLicenseBreakdown.classList.toggle('hidden', breakdownHTML === '');
+            }
+
+            // Build BOM HTML Lists
+            let bomHTML = '';
+            
+            // --- HARDWARE ---
+            if(mC > 0) bomHTML += `<li class="flex justify-between items-start"><div class="flex-1"><span class="font-bold text-[#00134D] block">${mC}x Display + Hub Bundle</span><span class="text-[10px] text-gray-500 font-normal block mt-0.5">Incl. Control Unit</span></div><span class="font-bold text-[#00134D]">${formatPrice(mC * pModel.bundle)}</span></li>`;
+            if(mS > 0) bomHTML += `<li class="flex justify-between items-start pt-2 ${mC === 0 ? '' : 'border-t border-[#A8C0F0]/30 mt-2'}"><div class="flex-1"><span class="font-bold text-[#00134D] block">${mS}x Display (Standalone)</span><span class="text-[10px] text-gray-500 font-normal block mt-0.5">PoE Powered</span></div><span class="font-bold text-[#00134D]">${formatPrice(mS * pModel.standalone)}</span></li>`;
+            
+            if(eH > 0) bomHTML += `<li class="flex justify-between items-start pt-2 text-[#A8C0F0]"><div class="flex-1"><span class="font-bold block text-[#00134D]">+ ${eH}x Extra Relay Hub</span></div><span class="font-bold text-[#00134D]">${formatPrice(eH * pModel.extraHub)}</span></li>`;
+            
+            if(srSlim > 0) bomHTML += `<li class="flex justify-between items-start pt-2 border-t border-[#A8C0F0]/30 mt-2"><div class="flex-1"><span class="font-bold text-[#00134D] block">${srSlim}x Slim Reader</span></div><span class="font-bold text-[#00134D]">${formatPrice(srSlim * shared.srSlim)}</span></li>`;
+            if(srStd > 0) bomHTML += `<li class="flex justify-between items-start pt-2 ${srSlim === 0 ? 'border-t border-[#A8C0F0]/30 mt-2' : ''}"><div class="flex-1"><span class="font-bold text-[#00134D] block">${srStd}x Standard Reader</span></div><span class="font-bold text-[#00134D]">${formatPrice(srStd * shared.srStandard)}</span></li>`;
+            if(srPin > 0) bomHTML += `<li class="flex justify-between items-start pt-2 ${srSlim === 0 && srStd === 0 ? 'border-t border-[#A8C0F0]/30 mt-2' : ''}"><div class="flex-1"><span class="font-bold text-[#00134D] block">${srPin}x Reader w/ PIN</span></div><span class="font-bold text-[#00134D]">${formatPrice(srPin * shared.srPin)}</span></li>`;
+            
+            if(ioModuleCount > 0) bomHTML += `<li class="flex justify-between items-start pt-2 text-gray-500"><div class="flex-1"><span class="font-bold block">+ ${ioModuleCount}x Secure I/O Module</span></div><span class="font-bold">${formatPrice(ioModuleCount * shared.ioModule)}</span></li>`;
+            
+            if(modems > 0) {
+                if (state.network === '4g') {
+                    bomHTML += `<li class="flex justify-between items-start pt-2 text-gray-500"><div class="flex-1"><span class="font-bold block">+ ${modems}x 4G Modem/Router</span></div><span class="font-bold">${formatPrice(modems * shared.modem)}</span></li>`;
+                } else {
+                    bomHTML += `<li class="flex justify-between items-start pt-2 text-gray-400 opacity-60"><div class="flex-1"><span class="font-bold block line-through">+ ${modems}x 4G Modem/Router</span></div><span class="font-bold">$0.00</span></li>`;
+                }
+            }
+            
+            if(pI > 0) bomHTML += `<li class="flex justify-between items-start pt-2 text-gray-500"><div class="flex-1"><span class="font-bold block">+ ${pI}x PoE Injector</span></div><span class="font-bold">${formatPrice(pI * shared.poeInjector)}</span></li>`;
+            if(s8 > 0) bomHTML += `<li class="flex justify-between items-start pt-2 text-gray-500"><div class="flex-1"><span class="font-bold block">+ ${s8}x 8-port Switch</span></div><span class="font-bold">${formatPrice(s8 * shared.switch8)}</span></li>`;
+            if(s24 > 0) bomHTML += `<li class="flex justify-between items-start pt-2 text-gray-500"><div class="flex-1"><span class="font-bold block">+ ${s24}x 24-port Switch</span></div><span class="font-bold">${formatPrice(s24 * shared.switch24)}</span></li>`;
+            if(s48 > 0) bomHTML += `<li class="flex justify-between items-start pt-2 text-gray-500"><div class="flex-1"><span class="font-bold block">+ ${s48}x 48-port Switch</span></div><span class="font-bold">${formatPrice(s48 * shared.switch48)}</span></li>`;
+
+            if(state.addons.inWall > 0) bomHTML += `<li class="flex justify-between items-start pt-2 border-t border-[#A8C0F0]/30 mt-2"><span>${state.addons.inWall}x In-Wall Mount</span><span class="font-bold text-[#00134D]">${formatPrice(state.addons.inWall * shared.inWall)}</span></li>`;
+            if(state.addons.secuFrame > 0) bomHTML += `<li class="flex justify-between items-start pt-2"><span>${state.addons.secuFrame}x SecuFrame</span><span class="font-bold text-[#00134D]">${formatPrice(state.addons.secuFrame * shared.secuFrame)}</span></li>`;
+            if(state.addons.intercom > 0) bomHTML += `<li class="flex justify-between items-start pt-2"><span>${state.addons.intercom}x Home Station</span><span class="font-bold text-[#00134D]">${formatPrice(state.addons.intercom * shared.intercom)}</span></li>`;
+            if(state.addons.homeStationStand > 0) bomHTML += `<li class="flex justify-between items-start pt-2"><span>${state.addons.homeStationStand}x Home Station Stand</span><span class="font-bold text-[#00134D]">${formatPrice(state.addons.homeStationStand * shared.homeStationStand)}</span></li>`;
+            if(state.addons.keyfobs > 0) bomHTML += `<li class="flex justify-between items-start pt-2"><span>${state.addons.keyfobs}x Key Fobs (50p)</span><span class="font-bold text-[#00134D]">${formatPrice(state.addons.keyfobs * shared.keyfobs)}</span></li>`;
+            
+            document.getElementById('bom-list').innerHTML = bomHTML; 
+            document.getElementById('receipt-bom-list').innerHTML = bomHTML;
+            
+            const tooltipCores = document.querySelectorAll('#tooltip-core-content');
+            const tooltipFlexes = document.querySelectorAll('#tooltip-flex-content');
+            
+            tooltipCores.forEach(el => {
+                if (isCore) el.style.display = 'block';
+                else el.style.display = 'none';
+            });
+            tooltipFlexes.forEach(el => {
+                if (isCore) el.style.display = 'none';
+                else el.style.display = 'block';
+            });
+
+            const nextBtn = document.getElementById('btn-next-from-bom');
+            const mobBar = document.getElementById('mobile-bottom-bar');
+            const mobBarNextBtn = document.getElementById('mob-btn-next');
+            if(state.step > 0 && state.nodes.length > 0 && state.step < 4) {
+                if(nextBtn) {
+                    nextBtn.classList.remove('hidden');
+                    nextBtn.innerHTML = state.step === 3 ? 'Submit <i data-lucide="send" class="w-4 h-4"></i>' : 'Continue <i data-lucide="arrow-right" class="w-4 h-4"></i>';
+                }
+                if(mobBar) {
+                    mobBar.classList.remove('translate-y-full');
+                    if(mobBarNextBtn) mobBarNextBtn.innerText = state.step === 3 ? 'Submit' : 'Continue';
+                }
+            } else {
+                if(nextBtn) nextBtn.classList.add('hidden');
+                if(mobBar) mobBar.classList.add('translate-y-full');
+            }
+
+            lucide.createIcons();
+        }
+
+        function renderReceipt() {
+            document.getElementById('receipt-company').innerText = state.contact.company || '-';
+            document.getElementById('receipt-project').innerText = state.contact.project || '-';
+            document.getElementById('receipt-btype').innerText = state.btype || '-';
+            document.getElementById('receipt-pstatus').innerText = state.pstatus || '-';
+            document.getElementById('receipt-model').innerText = state.pricingModel === 'core' ? 'Defigo Core' : 'Defigo Flex';
+            document.getElementById('receipt-tenants').innerText = state.tenantCount;
+            document.getElementById('receipt-flex-disclaimer').style.display = state.pricingModel === 'flex' ? 'block' : 'none';
+        }
+
+        function toggleFab() {
+            const menu = document.getElementById('fab-menu'); const icon = document.getElementById('fab-icon');
+            if(menu && menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden'); menu.offsetHeight; menu.classList.replace('scale-95', 'scale-100'); menu.classList.replace('opacity-0', 'opacity-100');
+                if (icon) icon.classList.add('rotate-45');
+            } else if (menu) {
+                menu.classList.replace('scale-100', 'scale-95'); menu.classList.replace('opacity-100', 'opacity-0'); if (icon) icon.classList.remove('rotate-45');
+                setTimeout(() => { menu.classList.add('hidden'); }, 300);
+            }
+        }
+
+        function renderUI() {
+            document.querySelectorAll('.funnel-step').forEach(el => el.classList.remove('active'));
+            const activeStep = document.getElementById(`step-${state.step}`); if(activeStep) activeStep.classList.add('active');
+            for(let i=0; i<4; i++) {
+                const nav = document.getElementById(`nav-step-${i}`); if(!nav) continue;
+                if(i < state.step) nav.innerHTML = `<div class="w-6 h-6 rounded-full bg-[#00134D] text-white flex items-center justify-center text-xs font-bold"><i data-lucide="check" class="w-3 h-3"></i></div><span class="text-xs font-bold uppercase tracking-wide text-[#00134D] hidden md:block">Done</span>`;
+                else if(i === state.step) nav.innerHTML = `<div class="w-6 h-6 rounded-full border-2 border-[#5CD67A] bg-emerald-50 text-[#5CD67A] flex items-center justify-center text-xs font-bold">${i+1}</div><span class="text-xs font-bold uppercase tracking-wide text-[#5CD67A] hidden md:block">Active</span>`;
+                else nav.innerHTML = `<div class="w-6 h-6 rounded-full border-2 border-gray-300 text-gray-400 flex items-center justify-center text-xs font-bold">${i+1}</div><span class="text-xs font-bold uppercase tracking-wide text-gray-400 hidden md:block">Next</span>`;
+            }
+            
+            const sidebar = document.getElementById('bom-sidebar'); 
+            if(sidebar) { 
+                if(state.step === 0 || state.step === 4) {
+                    sidebar.style.display = 'none'; 
+                } else {
+                    sidebar.style.display = ''; 
+                    sidebar.classList.add('translate-x-full'); // Gömmer den på mobil tills användaren togglar fram den
+                }
+            }
+
+            if(state.step === 4) renderReceipt();
+            lucide.createIcons(); updateStaticPrices(); renderBOM();
+        }
+
+        updateStaticPrices(); renderUI();
+    </script>
+</body>
+</html>
